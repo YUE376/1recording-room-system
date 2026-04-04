@@ -1,1023 +1,248 @@
-<!DOCTYPE html> <html lang="zh-CN"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>录播室申请管理系统</title> <style> * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Microsoft YaHei', sans-serif; }
-      body {
-        background-color: #f5f7fa;
-        color: #333;
-        line-height: 1.6;
-        padding: 20px;
-    }
-    
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-        padding: 30px;
-    }
-    
-    header {
-        text-align: center;
-        margin-bottom: 30px;
-        padding-bottom: 20px;
-        border-bottom: 2px solid #eaeaea;
-    }
-    
-    h1 {
-        color: #2c3e50;
-        margin-bottom: 10px;
-    }
-    
-    .subtitle {
-        color: #7f8c8d;
-        font-size: 16px;
-    }
-    
-    .main-content {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 30px;
-    }
-    
-    .form-section {
-        flex: 1;
-        min-width: 300px;
-    }
-    
-    .records-section {
-        flex: 1;
-        min-width: 300px;
-    }
-    
-    .section-title {
-        font-size: 20px;
-        color: #3498db;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #eee;
-    }
-    
-    .form-group {
-        margin-bottom: 20px;
-    }
-    
-    label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-        color: #2c3e50;
-    }
-    
-    input, select, textarea {
-        width: 100%;
-        padding: 12px 15px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        font-size: 16px;
-        transition: border-color 0.3s;
-    }
-    
-    input:focus, select:focus, textarea:focus {
-        border-color: #3498db;
-        outline: none;
-    }
-    
-    textarea {
-        min-height: 100px;
-        resize: vertical;
-    }
-    
-    .time-slots {
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 8px;
-        margin-top: 10px;
-    }
-    
-    .time-slot {
-        padding: 8px 5px;
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
-        text-align: center;
-        cursor: pointer;
-        font-size: 14px;
-        transition: all 0.2s;
-    }
-    
-    .time-slot:hover {
-        background-color: #e9ecef;
-    }
-    
-    .time-slot.selected {
-        background-color: #3498db;
-        color: white;
-        border-color: #2980b9;
-    }
-    
-    .time-slot.conflict {
-        background-color: #e74c3c;
-        color: white;
-        border-color: #c0392b;
-    }
-    
-    .buttons {
-        display: flex;
-        gap: 15px;
-        margin-top: 30px;
-    }
-    
-    button {
-        padding: 12px 25px;
-        border: none;
-        border-radius: 5px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    
-    .submit-btn {
-        background-color: #2ecc71;
-        color: white;
-    }
-    
-    .submit-btn:hover {
-        background-color: #27ae60;
-    }
-    
-    .export-btn {
-        background-color: #3498db;
-        color: white;
-    }
-    
-    .export-btn:hover {
-        background-color: #2980b9;
-    }
-    
-    .clear-btn {
-        background-color: #95a5a6;
-        color: white;
-    }
-    
-    .clear-btn:hover {
-        background-color: #7f8c8d;
-    }
-    
-    .records-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-    }
-    
-    .records-table th, .records-table td {
-        padding: 12px 15px;
-        text-align: left;
-        border-bottom: 1px solid #eee;
-    }
-    
-    .records-table th {
-        background-color: #f8f9fa;
-        font-weight: 600;
-        color: #2c3e50;
-    }
-    
-    .records-table tr:hover {
-        background-color: #f8f9fa;
-    }
-    
-    .action-buttons {
-        display: flex;
-        gap: 8px;
-    }
-    
-    .edit-btn, .delete-btn {
-        padding: 5px 10px;
-        font-size: 14px;
-        border-radius: 3px;
-    }
-    
-    .edit-btn {
-        background-color: #f39c12;
-        color: white;
-    }
-    
-    .edit-btn:hover {
-        background-color: #d68910;
-    }
-    
-    .delete-btn {
-        background-color: #e74c3c;
-        color: white;
-    }
-    
-    .delete-btn:hover {
-        background-color: #c0392b;
-    }
-    
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .modal-content {
-        background-color: white;
-        padding: 30px;
-        border-radius: 10px;
-        max-width: 500px;
-        width: 90%;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-    }
-    
-    .modal-title {
-        font-size: 20px;
-        margin-bottom: 15px;
-        color: #e74c3c;
-    }
-    
-    .modal-message {
-        margin-bottom: 20px;
-        line-height: 1.6;
-    }
-    
-    .modal-close {
-        background-color: #3498db;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        float: right;
-    }
-    
-    .footer {
-        margin-top: 30px;
-        text-align: center;
-        color: #7f8c8d;
-        font-size: 14px;
-        padding-top: 20px;
-        border-top: 1px solid #eee;
-    }
-    
-    @media (max-width: 768px) {
-        .time-slots {
-            grid-template-columns: repeat(4, 1fr);
-        }
-        
-        .buttons {
-            flex-direction: column;
-        }
-        
-        button {
-            width: 100%;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .time-slots {
-            grid-template-columns: repeat(3, 1fr);
-        }
-        
-        .container {
-            padding: 15px;
-        }
-    }
-</style>
-</head> <body> <div class="container"> <header> <h1>录播室申请管理系统</h1> <p class="subtitle">请填写申请信息，选择使用日期和时间段</p> </header>
-    <div class="main-content">
-        <div class="form-section">
-            <h2 class="section-title">申请表单</h2>
-            
-            <form id="applicationForm">
-                <div class="form-group">
-                    <label for="applicantName">申请人姓名</label>
-                    <input type="text" id="applicantName" placeholder="请输入您的姓名" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="department">选择部门</label>
-                    <select id="department" required>
-                        <option value="">请选择部门</option>
-                        <option value="党政办公室">党政办公室</option>
-                        <option value="总编室">总编室</option>
-                        <option value="校对质检部">校对质检部</option>
-                        <option value="财务部">财务部</option>
-                        <option value="出版部">出版部</option>
-                        <option value="发行部">发行部</option>
-                        <option value="数媒出版事业部">数媒出版事业部</option>
-                        <option value="政治理论编辑室">政治理论编辑室</option>
-                        <option value="经济管理编辑室">经济管理编辑室</option>
-                        <option value="社会建设编辑室">社会建设编辑室</option>
-                        <option value="历史文化编辑室">历史文化编辑室</option>
-                        <option value="译文编辑室">译文编辑室</option>
-                        <option value="教育图书编辑室">教育图书编辑室</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="useDate">使用日期</label>
-                    <input type="date" id="useDate" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>选择使用时间段 (24小时制)</label>
-                    <div class="time-slots" id="timeSlots">
-                        <!-- 时间槽位将通过JavaScript动态生成 -->
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="purpose">申请事由</label>
-                    <textarea id="purpose" placeholder="请详细说明申请使用录播室的事由" required></textarea>
-                </div>
-                
-                <div class="buttons">
-                    <button type="submit" class="submit-btn">提交申请</button>
-                    <button type="button" class="export-btn" id="exportBtn">导出申请记录</button>
-                    <button type="button" class="clear-btn" id="clearFormBtn">清空表单</button>
-                </div>
-            </form>
-        </div>
-        
-        <div class="records-section">
-            <h2 class="section-title">申请记录</h2>
-            <div class="table-container">
-                <table class="records-table" id="recordsTable">
-                    <thead>
-                        <tr>
-                            <th>日期</th>
-                            <th>时间段</th>
-                            <th>申请人</th>
-                            <th>部门</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recordsBody">
-                        <!-- 申请记录将通过JavaScript动态生成 -->
-                    </tbody>
-                </table>
-            </div>
-            <p style="margin-top: 15px; color: #7f8c8d; font-size: 14px;">点击"编辑"或"删除"按钮可修改或删除申请记录</p>
-        </div>
-    </div>
-    
-    <div class="footer">
-        <p>录播室申请管理系统 &copy; 2026 - 当前时间: 2026年04月04日</p>
-    </div>
-</div>
-
-<!-- 冲突提示模态框 -->
-<div class="modal" id="conflictModal">
-    <div class="modal-content">
-        <h3 class="modal-title">时间冲突提示</h3>
-        <p class="modal-message" id="conflictMessage"></p>
-        <button class="modal-close" id="closeModalBtn">确定</button>
-    </div>
-</div>
-
-<!-- GitHub配置面板 -->
-<div class="modal" id="githubConfigModal">
-    <div class="modal-content" style="max-width: 500px;">
-        <h3 class="modal-title">GitHub云端同步配置</h3>
-        <div class="modal-message">
-            <div class="form-group">
-                <label for="githubToken">GitHub Personal Access Token</label>
-                <input type="password" id="githubToken" placeholder="请输入您的GitHub Token" style="width: 100%;">
-                <p style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
-                    需要创建具有repo权限的Token。访问 
-                    <a href="https://github.com/settings/tokens" target="_blank" style="color: #3498db;">
-                        GitHub Token设置
-                    </a>
-                    创建新的Token。
-                </p>
-            </div>
-            <div class="form-group">
-                <label for="githubUsername">GitHub用户名</label>
-                <input type="text" id="githubUsername" value="yue376" style="width: 100%;">
-            </div>
-            <div class="form-group">
-                <label for="githubRepo">仓库名称</label>
-                <input type="text" id="githubRepo" value="1recording-room-system" style="width: 100%;">
-            </div>
-            <div class="form-group">
-                <label for="dataFilePath">数据文件路径</label>
-                <input type="text" id="dataFilePath" value="data/records.json" style="width: 100%;">
-            </div>
-        </div>
-        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-            <button class="clear-btn" id="cancelConfigBtn">取消</button>
-            <button class="submit-btn" id="saveConfigBtn">保存配置</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    // GitHub仓库配置
-    const GITHUB_CONFIG = {
-        username: 'yue376',
-        repo: '1recording-room-system',
-        dataFile: 'data/records.json',
-        token: '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'
-    };
-
-    // GitHub API基础URL
-    const GITHUB_API_BASE = 'https://api.github.com';
-
-    // 初始化时间槽位
-    function initTimeSlots() {
-        const timeSlotsContainer = document.getElementById('timeSlots');
-        timeSlotsContainer.innerHTML = '';
-        
-        // 生成24个小时的时间槽位
-        for (let hour = 0; hour < 24; hour++) {
-            const timeSlot = document.createElement('div');
-            timeSlot.className = 'time-slot';
-            timeSlot.dataset.hour = hour;
-            
-            // 格式化时间显示
-            const displayHour = hour.toString().padStart(2, '0');
-            timeSlot.textContent = `${displayHour}:00-${displayHour}:59`;
-            
-            timeSlot.addEventListener('click', function() {
-                this.classList.toggle('selected');
-            });
-            
-            timeSlotsContainer.appendChild(timeSlot);
-        }
-    }
-    
-    // 从GitHub加载申请记录
-    async function loadRecordsFromGitHub() {
-        try {
-            const response = await fetch(
-                `${GITHUB_API_BASE}/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.dataFile}`,
-                {
-                    headers: {
-                        'Authorization': `token ${GITHUB_CONFIG.token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                }
-            );
-            
-            if (response.status === 404) {
-                // 文件不存在，返回空数组
-                return [];
-            }
-            
-            if (!response.ok) {
-                throw new Error(`GitHub API错误: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            // GitHub API返回的是base64编码的内容
-            const content = atob(data.content);
-            return JSON.parse(content);
-        } catch (error) {
-            console.error('加载数据失败:', error);
-            alert('无法从云端加载数据，请检查网络连接和GitHub配置');
-            return [];
-        }
-    }
-
-    // 保存申请记录到GitHub
-    async function saveRecordsToGitHub(records) {
-        try {
-            // 先获取文件的SHA（用于更新）
-            let sha = '';
-            try {
-                const getResponse = await fetch(
-                    `${GITHUB_API_BASE}/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.dataFile}`,
-                    {
-                        headers: {
-                            'Authorization': `token ${GITHUB_CONFIG.token}`,
-                            'Accept': 'application/vnd.github.v3+json'
-                        }
-                    }
-                );
-                
-                if (getResponse.ok) {
-                    const data = await getResponse.json();
-                    sha = data.sha;
-                }
-            } catch (e) {
-                // 文件不存在，SHA为空
-            }
-            
-            // 准备提交内容
-            const content = JSON.stringify(records, null, 2);
-            const encodedContent = btoa(unescape(encodeURIComponent(content)));
-            
-            const response = await fetch(
-                `${GITHUB_API_BASE}/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.dataFile}`,
-                {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${GITHUB_CONFIG.token}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: `更新录播室申请记录 ${new Date().toLocaleString('zh-CN')}`,
-                        content: encodedContent,
-                        sha: sha || undefined
-                    })
-                }
-            );
-            
-            if (!response.ok) {
-                throw new Error(`保存失败: ${response.status}`);
-            }
-            
-            return true;
-        } catch (error) {
-            console.error('保存数据失败:', error);
-            alert('无法保存到云端，请检查GitHub配置和网络连接');
-            return false;
-        }
-    }
-
-    // 显示申请记录（云端版本）
-async function displayRecords() {
-const recordsBody = document.getElementById('recordsBody');
-recordsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #7f8c8d;">正在加载数据...</td></tr>';
-  try {
-    const records = await loadRecordsFromGitHub();
-    
-    if (records.length === 0) {
-        recordsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #7f8c8d;">暂无申请记录</td></tr>';
-        return;
-    }
-    
-    // 按日期排序，最新的在前面
-    records.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    recordsBody.innerHTML = '';
-    
-    records.forEach((record, index) => {
-        const row = document.createElement('tr');
-        
-        // 格式化时间段显示
-        const timeSlots = record.timeSlots.map(hour => {
-            const displayHour = hour.toString().padStart(2, '0');
-            return `${displayHour}:00`;
-        }).join(', ');
-        
-        row.innerHTML = `
-            <td>${record.date}</td>
-            <td>${timeSlots}</td>
-            <td>${record.name}</td>
-            <td>${record.department}</td>
-            <td>
-                <div class="action-buttons">
-                    <button class="edit-btn" data-index="${index}">编辑</button>
-                    <button class="delete-btn" data-index="${index}">删除</button>
-                </div>
-            </td>
-        `;
-        
-        recordsBody.appendChild(row);
-    });
-    
-    // 添加编辑和删除事件监听
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const index = parseInt(this.dataset.index);
-            editRecord(index);
-        });
-    });
-    
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const index = parseInt(this.dataset.index);
-            deleteRecord(index);
-        });
-    });
-    
-} catch (error) {
-    recordsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #e74c3c;">加载数据失败，请检查配置</td></tr>';
+body {​
+background-color: #f5f7fa;​
+color: #333;​
+line-height: 1.6;​
+padding: 20px;​
+}​
+.container {​
+max-width: 1200px;​
+margin: 0 auto;​
+background-color: white;​
+border-radius: 10px;​
+box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);​
+padding: 30px;​
+}​
+header {​
+text-align: center;​
+margin-bottom: 30px;​
+padding-bottom: 20px;​
+border-bottom: 2px solid #eaeaea;​
+}​
+h1 {​
+color: #2c3e50;​
+margin-bottom: 10px;​
+}​
+.subtitle {​
+color: #7f8c8d;​
+font-size: 16px;​
+}​
+.main-content {​
+display: flex;​
+flex-wrap: wrap;​
+gap: 30px;​
+}​
+.form-section {​
+flex: 1;​
+min-width: 300px;​
+}​
+.records-section {​
+flex: 1;​
+min-width: 300px;​
+}​
+.section-title {​
+font-size: 20px;​
+color: #3498db;​
+margin-bottom: 20px;​
+padding-bottom: 10px;​
+border-bottom: 1px solid #eee;​
+}​
+.form-group {​
+margin-bottom: 20px;​
+}​
+label {​
+display: block;​
+margin-bottom: 8px;​
+font-weight: 600;​
+color: #2c3e50;​
+}​
+input, select, textarea {​
+width: 100%;​
+padding: 12px 15px;​
+border: 1px solid #ddd;​
+border-radius: 5px;​
+font-size: 16px;​
+transition: border-color 0.3s;​
+}​
+input:focus, select:focus, textarea:focus {​
+border-color: #3498db;​
+outline: none;​
+}​
+textarea {​
+min-height: 100px;​
+resize: vertical;​
+}​
+.time-slots {​
+display: grid;​
+grid-template-columns: repeat(6, 1fr);​
+gap: 8px;​
+margin-top: 10px;​
+}​
+.time-slot {​
+padding: 8px 5px;​
+background-color: #f8f9fa;​
+border: 1px solid #dee2e6;​
+border-radius: 4px;​
+text-align: center;​
+cursor: pointer;​
+font-size: 14px;​
+transition: all 0.2s;​
+}​
+.time-slot:hover {​
+background-color: #e9ecef;​
+}​
+.time-slot.selected {​
+background-color: #3498db;​
+color: white;​
+border-color: #2980b9;​
+}​
+.time-slot.conflict {​
+background-color: #e74c3c;​
+color: white;​
+border-color: #c0392b;​
+pointer-events: none;​
+}​
+.buttons {​
+display: flex;​
+gap: 15px;​
+margin-top: 30px;​
+}​
+button {​
+padding: 12px 25px;​
+border: none;​
+border-radius: 5px;​
+font-size: 16px;​
+font-weight: 600;​
+cursor: pointer;​
+transition: all 0.3s;​
+}​
+.submit-btn {​
+background-color: #2ecc71;​
+color: white;​
+}​
+.submit-btn:hover {​
+background-color: #27ae60;​
+}​
+.submit-btn:disabled {​
+background-color: #95a5a6;​
+cursor: not-allowed;​
+}​
+.export-btn {​
+background-color: #3498db;​
+color: white;​
+}​
+.export-btn:hover {​
+background-color: #2980b9;​
+}​
+.clear-btn {​
+background-color: #95a5a6;​
+color: white;​
+}​
+.clear-btn:hover {​
+background-color: #7f8c8d;​
+}​
+.records-table {​
+width: 100%;​
+border-collapse: collapse;​
+margin-top: 10px;​
+}​
+.records-table th, .records-table td {​
+padding: 12px 15px;​
+text-align: left;​
+border-bottom: 1px solid #eee;​
+}​
+.records-table th {​
+background-color: #f8f9fa;​
+font-weight: 600;​
+color: #2c3e50;​
+}​
+.records-table tr:hover {​
+background-color: #f8f9fa;​
+}​
+.action-buttons {​
+display: flex;​
+gap: 8px;​
+}​
+.edit-btn, .delete-btn {​
+padding: 5px 10px;​
+font-size: 14px;​
+border-radius: 3px;​
+}​
+.edit-btn {​
+background-color: #f39c12;​
+color: white;​
+}​
+.edit-btn:hover {​
+background-color: #d68910;​
+}​
+.delete-btn {​
+background-color: #e74c3c;​
+color: white;​
+}​
+.delete-btn:hover {​
+background-color: #c0392b;​
+}​
+.modal {​
+display: none;​
+position: fixed;​
+top: 0;​
+left: 0;​
+width: 100%;​
+height: 100%;​
+background-color: rgba(0, 0, 0, 0.5);​
+z-index: 1000;​
+justify-content: center;​
+align-items: center;​
+}​
+.modal-content {​
+background-color: white;​
+padding: 30px;​
+border-radius: 10px;​
+max-width: 500px;​
+width: 90%;​
+box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);​
+}​
+.modal-title {​
+font-size: 20px;​
+margin-bottom: 15px;​
+color: #e74c3c;​
+}​
+.modal-message {​
+margin-bottom: 20px;​
+line-height: 1.6;​
+}​
+.modal-close {​
+background-color: #3498db;​
+color: white;​
+padding: 10px 20px;​
+border: none;​
+border-radius: 5px;​
+cursor: pointer;​
+float: right;​
+}​
+.footer {​
+margin-top: 30px;​
+text-align: center;​
+color: #7f8c8d;​
+font-size: 14px;​
+padding-top: 20px;​
+border-top: 1px solid #eee;​
+}​
+@media (max-width: 768px) {​
+.time-slots {​
+grid-template-columns: repeat(4, 1fr);​
+}​
+.buttons {​
+flex-direction: column;​
+}​
+button {​
+width: 100%;​
+}​
+}​
+@media (max-width: 480px) {​
+.time-slots {​
+grid-template-columns: repeat(3, 1fr);​
+}​
+.container {​
+padding: 15px;​
+}​
 }
-}
-
-// 检查时间冲突
-async function checkTimeConflict(date, timeSlots) {
-const records = await loadRecordsFromGitHub();
-for (const record of records) {
-    if (record.date === date) {
-        // 检查是否有重叠的时间段
-        const hasConflict = timeSlots.some(slot => record.timeSlots.includes(slot));
-        
-        if (hasConflict) {
-            return {
-                conflict: true,
-                conflictingRecord: record
-            };
-        }
-    }
-}
-
-return { conflict: false };
-}
-
-// 显示冲突提示
-function showConflictMessage(conflictingRecord, date, timeSlots) {
-const conflictMessage = document.getElementById('conflictMessage');
-const conflictModal = document.getElementById('conflictModal');
-const conflictTimes = timeSlots.filter(slot => 
-    conflictingRecord.timeSlots.includes(slot)
-).map(hour => {
-    const displayHour = hour.toString().padStart(2, '0');
-    return `${displayHour}:00-${displayHour}:59`;
-}).join(', ');
-
-conflictMessage.textContent = 
-    `您选择的时间段与已有申请冲突！\n\n冲突时间：${date} ${conflictTimes}\n冲突申请人：${conflictingRecord.name}\n所属部门：${conflictingRecord.department}\n\n请选择其他时间段。`;
-
-conflictModal.style.display = 'flex';
-
-// 高亮显示冲突的时间段
-const allTimeSlots = document.querySelectorAll('.time-slot');
-allTimeSlots.forEach(slot => {
-    const hour = parseInt(slot.dataset.hour);
-    if (conflictingRecord.timeSlots.includes(hour)) {
-        slot.classList.add('conflict');
-    }
-});
-}
-
-// 提交申请（云端版本）
-async function submitApplication(event) {
-event.preventDefault();
-  const name = document.getElementById('applicantName').value.trim();
-const department = document.getElementById('department').value;
-const date = document.getElementById('useDate').value;
-const purpose = document.getElementById('purpose').value.trim();
-
-// 获取选中的时间段
-const selectedTimeSlots = Array.from(document.querySelectorAll('.time-slot.selected'))
-    .map(slot => parseInt(slot.dataset.hour));
-
-// 验证表单
-if (!name || !department || !date || !purpose || selectedTimeSlots.length === 0) {
-    alert('请填写所有必填项并选择至少一个时间段！');
-    return;
-}
-
-// 检查时间冲突
-const conflictCheck = await checkTimeConflict(date, selectedTimeSlots);
-if (conflictCheck.conflict) {
-    showConflictMessage(conflictCheck.conflictingRecord, date, selectedTimeSlots);
-    return;
-}
-
-// 创建申请记录
-const newRecord = {
-    id: Date.now(),
-    name,
-    department,
-    date,
-    timeSlots: selectedTimeSlots,
-    purpose,
-    submitTime: new Date().toLocaleString('zh-CN')
-};
-
-// 保存记录到云端
-const records = await loadRecordsFromGitHub();
-records.push(newRecord);
-const success = await saveRecordsToGitHub(records);
-
-if (success) {
-    // 更新显示
-    await displayRecords();
-    
-    // 重置表单
-    document.getElementById('applicationForm').reset();
-    
-    // 清除所有选中的时间段
-    document.querySelectorAll('.time-slot.selected').forEach(slot => {
-        slot.classList.remove('selected');
-    });
-    
-    // 清除冲突标记
-    document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-        slot.classList.remove('conflict');
-    });
-    
-    alert('申请提交成功！数据已同步到云端。');
-}
-}
-
-// 编辑申请记录（云端版本）
-async function editRecord(index) {
-const records = await loadRecordsFromGitHub();
-const record = records[index];
-// 填充表单
-document.getElementById('applicantName').value = record.name;
-document.getElementById('department').value = record.department;
-document.getElementById('useDate').value = record.date;
-document.getElementById('purpose').value = record.purpose;
-
-// 清除之前的选择
-document.querySelectorAll('.time-slot.selected').forEach(slot => {
-    slot.classList.remove('selected');
-});
-
-// 清除冲突标记
-document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-    slot.classList.remove('conflict');
-});
-
-// 选择对应的时间段
-record.timeSlots.forEach(hour => {
-    const slot = document.querySelector(`.time-slot[data-hour="${hour}"]`);
-    if (slot) {
-        slot.classList.add('selected');
-    }
-});
-
-// 删除原记录
-records.splice(index, 1);
-await saveRecordsToGitHub(records);
-await displayRecords();
-
-// 滚动到表单区域
-document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
-
-alert('已加载申请记录到表单，请修改后重新提交。');
-}
-
-// 删除申请记录（云端版本）
-async function deleteRecord(index) {
-if (confirm('确定要删除这条申请记录吗？')) {
-const records = await loadRecordsFromGitHub();
-records.splice(index, 1);
-const success = await saveRecordsToGitHub(records);
-     if (success) {
-        await displayRecords();
-        alert('申请记录已删除。');
-    }
-}
- }
-
-// 导出申请记录（云端版本）
-async function exportRecords() {
-const records = await loadRecordsFromGitHub();
-if (records.length === 0) {
-    alert('暂无申请记录可导出。');
-    return;
-}
-
-// 创建导出内容
-let exportContent = '录播室申请记录\n';
-exportContent += '导出时间：' + new Date().toLocaleString('zh-CN') + '\n';
-exportContent += '数据来源：GitHub云端同步\n';
-exportContent += '仓库地址：https://github.com/yue376/1recording-room-system\n';
-exportContent += '='.repeat(50) + '\n\n';
-
-records.forEach((record, index) => {
-    exportContent += `记录 ${index + 1}:\n`;
-    exportContent += `申请日期：${record.submitTime}\n`;
-    exportContent += `使用日期：${record.date}\n`;
-    exportContent += `使用时间段：${record.timeSlots.map(hour => {
-        const displayHour = hour.toString().padStart(2, '0');
-        return `${displayHour}:00-${displayHour}:59`;
-    }).join(', ')}\n`;
-    exportContent += `申请人：${record.name}\n`;
-    exportContent += `部门：${record.department}\n`;
-    exportContent += `申请事由：${record.purpose}\n`;
-    exportContent += '-'.repeat(40) + '\n\n';
-});
-
-// 创建Blob对象并下载
-const blob = new Blob([exportContent], { type: 'text/plain;charset=utf-8' });
-const url = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = `录播室申请记录_${new Date().toISOString().slice(0, 10)}.txt`;
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
-URL.revokeObjectURL(url);
-
-alert('申请记录已导出为TXT文件。');
-}
-
-// 一键复制到剪贴板（云端版本）
-async function copyToClipboard() {
-const records = await loadRecordsFromGitHub();
-  
-if (records.length === 0) {
-    alert('暂无申请记录可复制。');
-    return;
-}
-
-// 创建复制内容
-let copyContent = '录播室申请记录\n';
-copyContent += '复制时间：' + new Date().toLocaleString('zh-CN') + '\n';
-copyContent += '数据来源：GitHub云端同步\n';
-copyContent += '仓库地址：https://github.com/yue376/1recording-room-system\n';
-copyContent += '='.repeat(50) + '\n\n';
-
-records.forEach((record, index) => {
-    copyContent += `记录 ${index + 1}:\n`;
-    copyContent += `申请日期：${record.submitTime}\n`;
-    copyContent += `使用日期：${record.date}\n`;
-    copyContent += `使用时间段：${record.timeSlots.map(hour => {
-        const displayHour = hour.toString().padStart(2, '0');
-        return `${displayHour}:00-${displayHour}:59`;
-    }).join(', ')}\n`;
-    copyContent += `申请人：${record.name}\n`;
-    copyContent += `部门：${record.department}\n`;
-    copyContent += `申请事由：${record.purpose}\n`;
-    copyContent += '-'.repeat(40) + '\n\n';
-});
-
-// 使用Clipboard API复制到剪贴板
-try {
-    await navigator.clipboard.writeText(copyContent);
-    alert('申请记录已复制到剪贴板，可以粘贴到TXT文件中。');
-} catch (err) {
-    // 如果Clipboard API不可用，使用备用方法
-    const textArea = document.createElement('textarea');
-    textArea.value = copyContent;
-    document.body.appendChild(textArea);
-    textArea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textArea);
-    alert('申请记录已复制到剪贴板，可以粘贴到TXT文件中。');
-}
-}
-
-// 清空表单
-function clearForm() {
-if (confirm('确定要清空表单内容吗？')) {
-document.getElementById('applicationForm').reset();
-document.querySelectorAll('.time-slot.selected').forEach(slot => {
-slot.classList.remove('selected');
-});
-document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-slot.classList.remove('conflict');
-});
-}
-}
-
-// 加载GitHub配置
-function loadGitHubConfig() {
-const savedConfig = localStorage.getItem('githubConfig');
-if (savedConfig) {
-const config = JSON.parse(savedConfig);
-GITHUB_CONFIG.token = config.token || '';
-GITHUB_CONFIG.username = config.username || 'yue376';
-GITHUB_CONFIG.repo = config.repo || '1recording-room-system';
-GITHUB_CONFIG.dataFile = config.dataFile || 'data/records.json';
-}
-}
-
-// 保存GitHub配置
-function saveGitHubConfig() {
-const config = {
-token: document.getElementById('githubToken').value,
-username: document.getElementById('githubUsername').value,
-repo: document.getElementById('githubRepo').value,
-dataFile: document.getElementById('dataFilePath').value
-};
- localStorage.setItem('githubConfig', JSON.stringify(config));
-
-// 更新全局配置
-Object.assign(GITHUB_CONFIG, config);
-
-alert('配置已保存！');
-document.getElementById('githubConfigModal').style.display = 'none';
-
-// 重新加载数据
-displayRecords();
-}
-
-// 显示配置面板
-function showConfigPanel() {
-document.getElementById('githubToken').value = GITHUB_CONFIG.token;
-document.getElementById('githubUsername').value = GITHUB_CONFIG.username;
-document.getElementById('githubRepo').value = GITHUB_CONFIG.repo;
-document.getElementById('dataFilePath').value = GITHUB_CONFIG.dataFile;
-document.getElementById('githubConfigModal').style.display = 'flex';
-}
-
-// 初始化页面（云端版本）
-async function initPage() {
-// 加载GitHub配置
-loadGitHubConfig();
-  // 设置默认日期为明天
-const tomorrow = new Date();
-tomorrow.setDate(tomorrow.getDate() + 1);
-const formattedDate = tomorrow.toISOString().split('T');
-document.getElementById('useDate').value = formattedDate;
-document.getElementById('useDate').min = formattedDate;
-
-// 初始化时间槽位
-initTimeSlots();
-
-// 显示已有记录
-await displayRecords();
-
-// 表单提交事件
-document.getElementById('applicationForm').addEventListener('submit', submitApplication);
-
-// 导出按钮事件
-document.getElementById('exportBtn').addEventListener('click', exportRecords);
-
-// 清空表单按钮事件
-document.getElementById('clearFormBtn').addEventListener('click', clearForm);
-
-// 关闭模态框按钮事件
-document.getElementById('closeModalBtn').addEventListener('click', function() {
-    document.getElementById('conflictModal').style.display = 'none';
-    // 清除冲突标记
-    document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-        slot.classList.remove('conflict');
-    });
-});
-
-// 点击模态框外部关闭
-document.getElementById('conflictModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        this.style.display = 'none';
-        // 清除冲突标记
-        document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-            slot.classList.remove('conflict');
-        });
-    }
-});
-
-// 添加配置按钮
-const configBtn = document.createElement('button');
-configBtn.textContent = '云端配置';
-configBtn.className = 'export-btn';
-configBtn.style.marginLeft = '10px';
-configBtn.addEventListener('click', showConfigPanel);
-document.querySelector('.buttons').appendChild(configBtn);
-
-// 配置面板事件
-document.getElementById('saveConfigBtn').addEventListener('click', saveGitHubConfig);
-document.getElementById('cancelConfigBtn').addEventListener('click', function() {
-    document.getElementById('githubConfigModal').style.display = 'none';
-});
-
-// 点击配置面板外部关闭
-document.getElementById('githubConfigModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        this.style.display = 'none';
-    }
-});
-
-// 添加日期限制：只能选择今天及以后的日期
-const today = new Date().toISOString().split('T');
-document.getElementById('useDate').min = today;
-
-// 当日期改变时，检查时间冲突并高亮显示
-document.getElementById('useDate').addEventListener('change', async function() {
-    const selectedDate = this.value;
-    const records = await loadRecordsFromGitHub();
-    
-    // 清除所有冲突标记
-    document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-        slot.classList.remove('conflict');
-    });
-    
-    // 查找该日期已有的申请
-    const dateRecords = records.filter(record => record.date === selectedDate);
-    
-    // 高亮显示已被占用的时间段
-    dateRecords.forEach(record => {
-        record.timeSlots.forEach(hour => {
-            const slot = document.querySelector(`.time-slot[data-hour="${hour}"]`);
-            if (slot) {
-                slot.classList.add('conflict');
-                slot.title = `已被 ${record.name} (${record.department}) 占用`;
-            }
-        });
-    });
-});
-
-// 添加一键复制按钮
-const copyBtn = document.createElement('button');
-copyBtn.textContent = '一键复制到TXT';
-copyBtn.className = 'export-btn';
-copyBtn.style.marginTop = '10px';
-copyBtn.addEventListener('click', copyToClipboard);
-document.querySelector('.records-section').appendChild(copyBtn);
-}
-
-// 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', initPage);
-
-</script> </body> </html>
-
-  
-
-  
