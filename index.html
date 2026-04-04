@@ -1,5 +1,12 @@
-<!DOCTYPE html> <html lang="zh-CN"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>录播室申请管理系统 - 云端版</title> <style> * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Microsoft YaHei', sans-serif; } body { background-color: #f5f7fa; color: #333; line-height: 1.6; padding: 20px; }
-                .container {
+<!DOCTYPE html> <html lang="zh-CN"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>录播室申请管理系统</title> <style> * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Microsoft YaHei', sans-serif; }
+      body {
+        background-color: #f5f7fa;
+        color: #333;
+        line-height: 1.6;
+        padding: 20px;
+    }
+    
+    .container {
         max-width: 1200px;
         margin: 0 auto;
         background-color: white;
@@ -156,15 +163,6 @@
         background-color: #7f8c8d;
     }
     
-    .sync-btn {
-        background-color: #9b59b6;
-        color: white;
-    }
-    
-    .sync-btn:hover {
-        background-color: #8e44ad;
-    }
-    
     .records-table {
         width: 100%;
         border-collapse: collapse;
@@ -268,31 +266,6 @@
         border-top: 1px solid #eee;
     }
     
-    .status-indicator {
-        display: inline-block;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        margin-right: 8px;
-    }
-    
-    .status-online {
-        background-color: #2ecc71;
-    }
-    
-    .status-offline {
-        background-color: #e74c3c;
-    }
-    
-    .sync-status {
-        margin-top: 10px;
-        padding: 10px;
-        background-color: #f8f9fa;
-        border-radius: 5px;
-        font-size: 14px;
-        color: #666;
-    }
-    
     @media (max-width: 768px) {
         .time-slots {
             grid-template-columns: repeat(4, 1fr);
@@ -317,7 +290,7 @@
         }
     }
 </style>
-</head> <body> <div class="container"> <header> <h1>录播室申请管理系统 - 云端版</h1> <p class="subtitle">基于GitHub云端存储，多浏览器实时同步</p> <div class="sync-status" id="syncStatus"> <span class="status-indicator status-online" id="statusIndicator"></span> <span id="statusText">正在连接GitHub云端仓库...</span> <span id="lastSyncTime"></span> </div> </header>
+</head> <body> <div class="container"> <header> <h1>录播室申请管理系统</h1> <p class="subtitle">请填写申请信息，选择使用日期和时间段</p> </header>
     <div class="main-content">
         <div class="form-section">
             <h2 class="section-title">申请表单</h2>
@@ -368,14 +341,13 @@
                 <div class="buttons">
                     <button type="submit" class="submit-btn">提交申请</button>
                     <button type="button" class="export-btn" id="exportBtn">导出申请记录</button>
-                    <button type="button" class="sync-btn" id="syncBtn">同步云端数据</button>
                     <button type="button" class="clear-btn" id="clearFormBtn">清空表单</button>
                 </div>
             </form>
         </div>
         
         <div class="records-section">
-            <h2 class="section-title">申请记录（云端存储）</h2>
+            <h2 class="section-title">申请记录</h2>
             <div class="table-container">
                 <table class="records-table" id="recordsTable">
                     <thead>
@@ -393,13 +365,11 @@
                 </table>
             </div>
             <p style="margin-top: 15px; color: #7f8c8d; font-size: 14px;">点击"编辑"或"删除"按钮可修改或删除申请记录</p>
-            <button class="export-btn" id="copyBtn" style="margin-top: 10px;">一键复制到TXT</button>
         </div>
     </div>
     
     <div class="footer">
-        <p>录播室申请管理系统 - 云端版 &copy; 2026 - 当前时间: 2026年04月04日</p>
-        <p>数据存储于GitHub仓库：yue376/1recording-room-system</p>
+        <p>录播室申请管理系统 &copy; 2026 - 当前时间: 2026年04月04日</p>
     </div>
 </div>
 
@@ -412,20 +382,54 @@
     </div>
 </div>
 
-<!-- GitHub API配置 -->
+<!-- GitHub配置面板 -->
+<div class="modal" id="githubConfigModal">
+    <div class="modal-content" style="max-width: 500px;">
+        <h3 class="modal-title">GitHub云端同步配置</h3>
+        <div class="modal-message">
+            <div class="form-group">
+                <label for="githubToken">GitHub Personal Access Token</label>
+                <input type="password" id="githubToken" placeholder="请输入您的GitHub Token" style="width: 100%;">
+                <p style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                    需要创建具有repo权限的Token。访问 
+                    <a href="https://github.com/settings/tokens" target="_blank" style="color: #3498db;">
+                        GitHub Token设置
+                    </a>
+                    创建新的Token。
+                </p>
+            </div>
+            <div class="form-group">
+                <label for="githubUsername">GitHub用户名</label>
+                <input type="text" id="githubUsername" value="yue376" style="width: 100%;">
+            </div>
+            <div class="form-group">
+                <label for="githubRepo">仓库名称</label>
+                <input type="text" id="githubRepo" value="1recording-room-system" style="width: 100%;">
+            </div>
+            <div class="form-group">
+                <label for="dataFilePath">数据文件路径</label>
+                <input type="text" id="dataFilePath" value="data/records.json" style="width: 100%;">
+            </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+            <button class="clear-btn" id="cancelConfigBtn">取消</button>
+            <button class="submit-btn" id="saveConfigBtn">保存配置</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    // GitHub仓库配置 - 修改后的配置
+    // GitHub仓库配置
     const GITHUB_CONFIG = {
-        owner: 'yue376',
+        username: 'yue376',
         repo: '1recording-room-system',
-        branch: 'main',
-        dataFile: 'recording-room-data.json',
-        token: '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'
+        dataFile: 'data/records.json',
+        token: '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'
     };
-    
+
     // GitHub API基础URL
     const GITHUB_API_BASE = 'https://api.github.com';
-    
+
     // 初始化时间槽位
     function initTimeSlots() {
         const timeSlotsContainer = document.getElementById('timeSlots');
@@ -449,149 +453,571 @@
         }
     }
     
-    // 更新同步状态显示
-    function updateSyncStatus(status, message) {
-        const statusIndicator = document.getElementById('statusIndicator');
-        const statusText = document.getElementById('statusText');
-        const lastSyncTime = document.getElementById('lastSyncTime');
-        
-        if (status === 'connected') {
-            statusIndicator.className = 'status-indicator status-online';
-            statusText.textContent = '已连接到GitHub云端仓库';
-            lastSyncTime.textContent = `最后同步: ${new Date().toLocaleTimeString('zh-CN')}`;
-        } else if (status === 'error') {
-            statusIndicator.className = 'status-indicator status-offline';
-            statusText.textContent = message || '云端连接失败，使用本地缓存';
-            lastSyncTime.textContent = '';
-        } else if (status === 'syncing') {
-            statusIndicator.className = 'status-indicator status-online';
-            statusText.textContent = '正在同步云端数据...';
-            lastSyncTime.textContent = '';
-        }
-    }
-    
-    // 从GitHub加载申请记录 - 修复版本
+    // 从GitHub加载申请记录
     async function loadRecordsFromGitHub() {
         try {
-            updateSyncStatus('syncing');
-            
-            // 构建API URL
-            const apiUrl = `${GITHUB_API_BASE}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.dataFile}?ref=${GITHUB_CONFIG.branch}`;
-            
-            // 设置请求头
-            const headers = {
-                'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
-            };
-            
-            // 如果有token，添加到请求头
-            if (GITHUB_CONFIG.token && GITHUB_CONFIG.token !== '') {
-                headers['Authorization'] = `token ${GITHUB_CONFIG.token}`;
-            }
-            
-            // 尝试从GitHub获取数据
-            const response = await fetch(apiUrl, { headers });
+            const response = await fetch(
+                `${GITHUB_API_BASE}/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.dataFile}`,
+                {
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                }
+            );
             
             if (response.status === 404) {
-                // 文件不存在，创建新文件
-                console.log('GitHub数据文件不存在，将创建新文件');
-                updateSyncStatus('connected', '云端文件不存在，已创建新文件');
+                // 文件不存在，返回空数组
                 return [];
             }
             
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`GitHub API错误: ${response.status} - ${errorData.message || '未知错误'}`);
+                throw new Error(`GitHub API错误: ${response.status}`);
             }
             
             const data = await response.json();
-            
-            // 修复base64解码问题
-            let content;
-            try {
-                // 尝试直接解码
-                content = atob(data.content);
-            } catch (e) {
-                // 如果直接解码失败
-// 从GitHub加载申请记录 - 修复版本
-async function loadRecordsFromGitHub() {
-    try {
-        updateSyncStatus('syncing');
-        
-        // 构建API URL
-        const apiUrl = `${GITHUB_API_BASE}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.dataFile}?ref=${GITHUB_CONFIG.branch}`;
-        
-        // 设置请求头
-        const headers = {
-            'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json'
-        };
-        
-        // 如果有token，添加到请求头
-        if (GITHUB_CONFIG.token && GITHUB_CONFIG.token !== '') {
-            headers['Authorization'] = `token ${GITHUB_CONFIG.token}`;
-        }
-        
-        // 尝试从GitHub获取数据
-        const response = await fetch(apiUrl, { headers });
-        
-        if (response.status === 404) {
-            // 文件不存在，创建新文件
-            console.log('GitHub数据文件不存在，将创建新文件');
-            updateSyncStatus('connected', '云端文件不存在，已创建新文件');
+            // GitHub API返回的是base64编码的内容
+            const content = atob(data.content);
+            return JSON.parse(content);
+        } catch (error) {
+            console.error('加载数据失败:', error);
+            alert('无法从云端加载数据，请检查网络连接和GitHub配置');
             return [];
         }
-        
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`GitHub API错误: ${response.status} - ${errorData.message || '未知错误'}`);
-        }
-        
-        const data = await response.json();
-        
-        // 修复base64解码问题
-        let content;
+    }
+
+    // 保存申请记录到GitHub
+    async function saveRecordsToGitHub(records) {
         try {
-            // 尝试直接解码
-            content = atob(data.content);
-        } catch (e) {
-            // 如果直接解码失败，尝试使用TextDecoder进行解码
-            console.log('atob解码失败，尝试使用TextDecoder:', e.message);
+            // 先获取文件的SHA（用于更新）
+            let sha = '';
             try {
-                const binaryString = atob(data.content.replace(/\s/g, ''));
-                const bytes = new Uint8Array(binaryString.length);
-                for (let i = 0; i < binaryString.length; i++) {
-                    bytes[i] = binaryString.charCodeAt(i);
+                const getResponse = await fetch(
+                    `${GITHUB_API_BASE}/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.dataFile}`,
+                    {
+                        headers: {
+                            'Authorization': `token ${GITHUB_CONFIG.token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    }
+                );
+                
+                if (getResponse.ok) {
+                    const data = await getResponse.json();
+                    sha = data.sha;
                 }
-                const decoder = new TextDecoder('utf-8');
-                content = decoder.decode(bytes);
-            } catch (decodeError) {
-                console.error('TextDecoder解码也失败:', decodeError);
-                // 如果两种方法都失败，尝试直接使用原始内容
-                content = data.content;
+            } catch (e) {
+                // 文件不存在，SHA为空
             }
-        }
-        
-        // 解析JSON数据
-        const records = JSON.parse(content);
-        updateSyncStatus('connected');
-        return records;
-    } catch (error) {
-        console.error('从GitHub加载数据失败:', error);
-        
-        // 尝试从本地缓存加载
-        try {
-            const cachedData = localStorage.getItem('recordingRoomRecords_cache');
-            if (cachedData) {
-                const records = JSON.parse(cachedData);
-                updateSyncStatus('error', '云端连接失败，已加载本地缓存数据');
-                return records;
+            
+            // 准备提交内容
+            const content = JSON.stringify(records, null, 2);
+            const encodedContent = btoa(unescape(encodeURIComponent(content)));
+            
+            const response = await fetch(
+                `${GITHUB_API_BASE}/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.dataFile}`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `更新录播室申请记录 ${new Date().toLocaleString('zh-CN')}`,
+                        content: encodedContent,
+                        sha: sha || undefined
+                    })
+                }
+            );
+            
+            if (!response.ok) {
+                throw new Error(`保存失败: ${response.status}`);
             }
-        } catch (cacheError) {
-            console.error('加载本地缓存也失败:', cacheError);
+            
+            return true;
+        } catch (error) {
+            console.error('保存数据失败:', error);
+            alert('无法保存到云端，请检查GitHub配置和网络连接');
+            return false;
         }
+    }
+
+    // 显示申请记录（云端版本）
+async function displayRecords() {
+const recordsBody = document.getElementById('recordsBody');
+recordsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #7f8c8d;">正在加载数据...</td></tr>';
+  try {
+    const records = await loadRecordsFromGitHub();
+    
+    if (records.length === 0) {
+        recordsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #7f8c8d;">暂无申请记录</td></tr>';
+        return;
+    }
+    
+    // 按日期排序，最新的在前面
+    records.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    recordsBody.innerHTML = '';
+    
+    records.forEach((record, index) => {
+        const row = document.createElement('tr');
         
-        updateSyncStatus('error', '云端连接失败且无本地缓存');
-        return [];
+        // 格式化时间段显示
+        const timeSlots = record.timeSlots.map(hour => {
+            const displayHour = hour.toString().padStart(2, '0');
+            return `${displayHour}:00`;
+        }).join(', ');
+        
+        row.innerHTML = `
+            <td>${record.date}</td>
+            <td>${timeSlots}</td>
+            <td>${record.name}</td>
+            <td>${record.department}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="edit-btn" data-index="${index}">编辑</button>
+                    <button class="delete-btn" data-index="${index}">删除</button>
+                </div>
+            </td>
+        `;
+        
+        recordsBody.appendChild(row);
+    });
+    
+    // 添加编辑和删除事件监听
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const index = parseInt(this.dataset.index);
+            editRecord(index);
+        });
+    });
+    
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const index = parseInt(this.dataset.index);
+            deleteRecord(index);
+        });
+    });
+    
+} catch (error) {
+    recordsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #e74c3c;">加载数据失败，请检查配置</td></tr>';
+}
+}
+
+// 检查时间冲突
+async function checkTimeConflict(date, timeSlots) {
+const records = await loadRecordsFromGitHub();
+for (const record of records) {
+    if (record.date === date) {
+        // 检查是否有重叠的时间段
+        const hasConflict = timeSlots.some(slot => record.timeSlots.includes(slot));
+        
+        if (hasConflict) {
+            return {
+                conflict: true,
+                conflictingRecord: record
+            };
+        }
     }
 }
+
+return { conflict: false };
+}
+
+// 显示冲突提示
+function showConflictMessage(conflictingRecord, date, timeSlots) {
+const conflictMessage = document.getElementById('conflictMessage');
+const conflictModal = document.getElementById('conflictModal');
+const conflictTimes = timeSlots.filter(slot => 
+    conflictingRecord.timeSlots.includes(slot)
+).map(hour => {
+    const displayHour = hour.toString().padStart(2, '0');
+    return `${displayHour}:00-${displayHour}:59`;
+}).join(', ');
+
+conflictMessage.textContent = 
+    `您选择的时间段与已有申请冲突！\n\n冲突时间：${date} ${conflictTimes}\n冲突申请人：${conflictingRecord.name}\n所属部门：${conflictingRecord.department}\n\n请选择其他时间段。`;
+
+conflictModal.style.display = 'flex';
+
+// 高亮显示冲突的时间段
+const allTimeSlots = document.querySelectorAll('.time-slot');
+allTimeSlots.forEach(slot => {
+    const hour = parseInt(slot.dataset.hour);
+    if (conflictingRecord.timeSlots.includes(hour)) {
+        slot.classList.add('conflict');
+    }
+});
+}
+
+// 提交申请（云端版本）
+async function submitApplication(event) {
+event.preventDefault();
+  const name = document.getElementById('applicantName').value.trim();
+const department = document.getElementById('department').value;
+const date = document.getElementById('useDate').value;
+const purpose = document.getElementById('purpose').value.trim();
+
+// 获取选中的时间段
+const selectedTimeSlots = Array.from(document.querySelectorAll('.time-slot.selected'))
+    .map(slot => parseInt(slot.dataset.hour));
+
+// 验证表单
+if (!name || !department || !date || !purpose || selectedTimeSlots.length === 0) {
+    alert('请填写所有必填项并选择至少一个时间段！');
+    return;
+}
+
+// 检查时间冲突
+const conflictCheck = await checkTimeConflict(date, selectedTimeSlots);
+if (conflictCheck.conflict) {
+    showConflictMessage(conflictCheck.conflictingRecord, date, selectedTimeSlots);
+    return;
+}
+
+// 创建申请记录
+const newRecord = {
+    id: Date.now(),
+    name,
+    department,
+    date,
+    timeSlots: selectedTimeSlots,
+    purpose,
+    submitTime: new Date().toLocaleString('zh-CN')
+};
+
+// 保存记录到云端
+const records = await loadRecordsFromGitHub();
+records.push(newRecord);
+const success = await saveRecordsToGitHub(records);
+
+if (success) {
+    // 更新显示
+    await displayRecords();
+    
+    // 重置表单
+    document.getElementById('applicationForm').reset();
+    
+    // 清除所有选中的时间段
+    document.querySelectorAll('.time-slot.selected').forEach(slot => {
+        slot.classList.remove('selected');
+    });
+    
+    // 清除冲突标记
+    document.querySelectorAll('.time-slot.conflict').forEach(slot => {
+        slot.classList.remove('conflict');
+    });
+    
+    alert('申请提交成功！数据已同步到云端。');
+}
+}
+
+// 编辑申请记录（云端版本）
+async function editRecord(index) {
+const records = await loadRecordsFromGitHub();
+const record = records[index];
+// 填充表单
+document.getElementById('applicantName').value = record.name;
+document.getElementById('department').value = record.department;
+document.getElementById('useDate').value = record.date;
+document.getElementById('purpose').value = record.purpose;
+
+// 清除之前的选择
+document.querySelectorAll('.time-slot.selected').forEach(slot => {
+    slot.classList.remove('selected');
+});
+
+// 清除冲突标记
+document.querySelectorAll('.time-slot.conflict').forEach(slot => {
+    slot.classList.remove('conflict');
+});
+
+// 选择对应的时间段
+record.timeSlots.forEach(hour => {
+    const slot = document.querySelector(`.time-slot[data-hour="${hour}"]`);
+    if (slot) {
+        slot.classList.add('selected');
+    }
+});
+
+// 删除原记录
+records.splice(index, 1);
+await saveRecordsToGitHub(records);
+await displayRecords();
+
+// 滚动到表单区域
+document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
+
+alert('已加载申请记录到表单，请修改后重新提交。');
+}
+
+// 删除申请记录（云端版本）
+async function deleteRecord(index) {
+if (confirm('确定要删除这条申请记录吗？')) {
+const records = await loadRecordsFromGitHub();
+records.splice(index, 1);
+const success = await saveRecordsToGitHub(records);
+     if (success) {
+        await displayRecords();
+        alert('申请记录已删除。');
+    }
+}
+ }
+
+// 导出申请记录（云端版本）
+async function exportRecords() {
+const records = await loadRecordsFromGitHub();
+if (records.length === 0) {
+    alert('暂无申请记录可导出。');
+    return;
+}
+
+// 创建导出内容
+let exportContent = '录播室申请记录\n';
+exportContent += '导出时间：' + new Date().toLocaleString('zh-CN') + '\n';
+exportContent += '数据来源：GitHub云端同步\n';
+exportContent += '仓库地址：https://github.com/yue376/1recording-room-system\n';
+exportContent += '='.repeat(50) + '\n\n';
+
+records.forEach((record, index) => {
+    exportContent += `记录 ${index + 1}:\n`;
+    exportContent += `申请日期：${record.submitTime}\n`;
+    exportContent += `使用日期：${record.date}\n`;
+    exportContent += `使用时间段：${record.timeSlots.map(hour => {
+        const displayHour = hour.toString().padStart(2, '0');
+        return `${displayHour}:00-${displayHour}:59`;
+    }).join(', ')}\n`;
+    exportContent += `申请人：${record.name}\n`;
+    exportContent += `部门：${record.department}\n`;
+    exportContent += `申请事由：${record.purpose}\n`;
+    exportContent += '-'.repeat(40) + '\n\n';
+});
+
+// 创建Blob对象并下载
+const blob = new Blob([exportContent], { type: 'text/plain;charset=utf-8' });
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = `录播室申请记录_${new Date().toISOString().slice(0, 10)}.txt`;
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+URL.revokeObjectURL(url);
+
+alert('申请记录已导出为TXT文件。');
+}
+
+// 一键复制到剪贴板（云端版本）
+async function copyToClipboard() {
+const records = await loadRecordsFromGitHub();
+  
+if (records.length === 0) {
+    alert('暂无申请记录可复制。');
+    return;
+}
+
+// 创建复制内容
+let copyContent = '录播室申请记录\n';
+copyContent += '复制时间：' + new Date().toLocaleString('zh-CN') + '\n';
+copyContent += '数据来源：GitHub云端同步\n';
+copyContent += '仓库地址：https://github.com/yue376/1recording-room-system\n';
+copyContent += '='.repeat(50) + '\n\n';
+
+records.forEach((record, index) => {
+    copyContent += `记录 ${index + 1}:\n`;
+    copyContent += `申请日期：${record.submitTime}\n`;
+    copyContent += `使用日期：${record.date}\n`;
+    copyContent += `使用时间段：${record.timeSlots.map(hour => {
+        const displayHour = hour.toString().padStart(2, '0');
+        return `${displayHour}:00-${displayHour}:59`;
+    }).join(', ')}\n`;
+    copyContent += `申请人：${record.name}\n`;
+    copyContent += `部门：${record.department}\n`;
+    copyContent += `申请事由：${record.purpose}\n`;
+    copyContent += '-'.repeat(40) + '\n\n';
+});
+
+// 使用Clipboard API复制到剪贴板
+try {
+    await navigator.clipboard.writeText(copyContent);
+    alert('申请记录已复制到剪贴板，可以粘贴到TXT文件中。');
+} catch (err) {
+    // 如果Clipboard API不可用，使用备用方法
+    const textArea = document.createElement('textarea');
+    textArea.value = copyContent;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    alert('申请记录已复制到剪贴板，可以粘贴到TXT文件中。');
+}
+}
+
+// 清空表单
+function clearForm() {
+if (confirm('确定要清空表单内容吗？')) {
+document.getElementById('applicationForm').reset();
+document.querySelectorAll('.time-slot.selected').forEach(slot => {
+slot.classList.remove('selected');
+});
+document.querySelectorAll('.time-slot.conflict').forEach(slot => {
+slot.classList.remove('conflict');
+});
+}
+}
+
+// 加载GitHub配置
+function loadGitHubConfig() {
+const savedConfig = localStorage.getItem('githubConfig');
+if (savedConfig) {
+const config = JSON.parse(savedConfig);
+GITHUB_CONFIG.token = config.token || '';
+GITHUB_CONFIG.username = config.username || 'yue376';
+GITHUB_CONFIG.repo = config.repo || '1recording-room-system';
+GITHUB_CONFIG.dataFile = config.dataFile || 'data/records.json';
+}
+}
+
+// 保存GitHub配置
+function saveGitHubConfig() {
+const config = {
+token: document.getElementById('githubToken').value,
+username: document.getElementById('githubUsername').value,
+repo: document.getElementById('githubRepo').value,
+dataFile: document.getElementById('dataFilePath').value
+};
+ localStorage.setItem('githubConfig', JSON.stringify(config));
+
+// 更新全局配置
+Object.assign(GITHUB_CONFIG, config);
+
+alert('配置已保存！');
+document.getElementById('githubConfigModal').style.display = 'none';
+
+// 重新加载数据
+displayRecords();
+}
+
+// 显示配置面板
+function showConfigPanel() {
+document.getElementById('githubToken').value = GITHUB_CONFIG.token;
+document.getElementById('githubUsername').value = GITHUB_CONFIG.username;
+document.getElementById('githubRepo').value = GITHUB_CONFIG.repo;
+document.getElementById('dataFilePath').value = GITHUB_CONFIG.dataFile;
+document.getElementById('githubConfigModal').style.display = 'flex';
+}
+
+// 初始化页面（云端版本）
+async function initPage() {
+// 加载GitHub配置
+loadGitHubConfig();
+  // 设置默认日期为明天
+const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+const formattedDate = tomorrow.toISOString().split('T');
+document.getElementById('useDate').value = formattedDate;
+document.getElementById('useDate').min = formattedDate;
+
+// 初始化时间槽位
+initTimeSlots();
+
+// 显示已有记录
+await displayRecords();
+
+// 表单提交事件
+document.getElementById('applicationForm').addEventListener('submit', submitApplication);
+
+// 导出按钮事件
+document.getElementById('exportBtn').addEventListener('click', exportRecords);
+
+// 清空表单按钮事件
+document.getElementById('clearFormBtn').addEventListener('click', clearForm);
+
+// 关闭模态框按钮事件
+document.getElementById('closeModalBtn').addEventListener('click', function() {
+    document.getElementById('conflictModal').style.display = 'none';
+    // 清除冲突标记
+    document.querySelectorAll('.time-slot.conflict').forEach(slot => {
+        slot.classList.remove('conflict');
+    });
+});
+
+// 点击模态框外部关闭
+document.getElementById('conflictModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.style.display = 'none';
+        // 清除冲突标记
+        document.querySelectorAll('.time-slot.conflict').forEach(slot => {
+            slot.classList.remove('conflict');
+        });
+    }
+});
+
+// 添加配置按钮
+const configBtn = document.createElement('button');
+configBtn.textContent = '云端配置';
+configBtn.className = 'export-btn';
+configBtn.style.marginLeft = '10px';
+configBtn.addEventListener('click', showConfigPanel);
+document.querySelector('.buttons').appendChild(configBtn);
+
+// 配置面板事件
+document.getElementById('saveConfigBtn').addEventListener('click', saveGitHubConfig);
+document.getElementById('cancelConfigBtn').addEventListener('click', function() {
+    document.getElementById('githubConfigModal').style.display = 'none';
+});
+
+// 点击配置面板外部关闭
+document.getElementById('githubConfigModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.style.display = 'none';
+    }
+});
+
+// 添加日期限制：只能选择今天及以后的日期
+const today = new Date().toISOString().split('T');
+document.getElementById('useDate').min = today;
+
+// 当日期改变时，检查时间冲突并高亮显示
+document.getElementById('useDate').addEventListener('change', async function() {
+    const selectedDate = this.value;
+    const records = await loadRecordsFromGitHub();
+    
+    // 清除所有冲突标记
+    document.querySelectorAll('.time-slot.conflict').forEach(slot => {
+        slot.classList.remove('conflict');
+    });
+    
+    // 查找该日期已有的申请
+    const dateRecords = records.filter(record => record.date === selectedDate);
+    
+    // 高亮显示已被占用的时间段
+    dateRecords.forEach(record => {
+        record.timeSlots.forEach(hour => {
+            const slot = document.querySelector(`.time-slot[data-hour="${hour}"]`);
+            if (slot) {
+                slot.classList.add('conflict');
+                slot.title = `已被 ${record.name} (${record.department}) 占用`;
+            }
+        });
+    });
+});
+
+// 添加一键复制按钮
+const copyBtn = document.createElement('button');
+copyBtn.textContent = '一键复制到TXT';
+copyBtn.className = 'export-btn';
+copyBtn.style.marginTop = '10px';
+copyBtn.addEventListener('click', copyToClipboard);
+document.querySelector('.records-section').appendChild(copyBtn);
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', initPage);
+
+</script> </body> </html>
+
+  
+
+  
