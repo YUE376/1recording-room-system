@@ -188,6 +188,14 @@
         .clear-btn:hover {
             background: #4b5563;
         }
+        .sync-btn {
+            background: #3b82f6;
+            color: #fff;
+            width: 100%;
+        }
+        .sync-btn:hover {
+            background: #2563eb;
+        }
         .records-table {
             width: 100%;
             border-collapse: collapse;
@@ -348,6 +356,9 @@
                     <button type="submit" class="submit-btn">提交申请表</button>
                     <button type="button" class="clear-btn" id="clearFormBtn">清空表单</button>
                 </div>
+                <div style="margin-top:12px;">
+                    <button type="button" class="sync-btn" id="syncCloudBtn">同步云端数据</button>
+                </div>
             </form>
         </div>
 
@@ -393,66 +404,60 @@
 
 <div class="modal" id="tipsModal">
     <div class="modal-content">
-        <h3 class="modal-title">提交成功</h3>
-        <p class="modal-text">请将申请表格以及修改记录提交给数媒部负责人</p>
+        <h3 class="modal-title">请将此文件打印并签字</h3>
+        <p class="modal-text">已生成《录播室申请表》</p>
         <button class="modal-btn" id="confirmBtn">已知晓</button>
     </div>
 </div>
 
 <script>
-    // 固定文件名（与云端一致）
-    const JSON_FILE = "请将此文件发给数媒部.json";
-    const TXT_FILE = "请将此文件打印并签字.txt";
+    // 文件名配置
+    const TXT_FILE = "录播室申请表.txt";
+    const JSON_FILE = "数媒部确认申请表.json";
+
     const today = new Date().toISOString().split('T')[0];
-    let opLog = { user:"", type:"", date:"", time:"", reason:"" };
+    let opData = {};
 
-    // 读取云端JSON（强制刷新缓存）
-    async function load() {
-        try {
-            const res = await fetch(`./${JSON_FILE}?t=${Date.now()}`);
-            if (!res.ok) return [];
-            const data = await res.json();
-            return Array.isArray(data) ? data : [];
-        } catch (e) {
-            return [];
-        }
+    // 本地存储操作
+    function getLocalRecords() {
+        const data = localStorage.getItem("records");
+        return data ? JSON.parse(data) : [];
+    }
+    function setLocalRecords(list) {
+        localStorage.setItem("records", JSON.stringify(list));
     }
 
-    // 保存JSON到云端
-    function saveFile(data) {
-        const jsonStr = JSON.stringify(data, null, 2);
-        const blob = new Blob([jsonStr], { type: "application/json" });
+    // 下载文件通用方法
+    function downloadFile(content, fileName, type) {
+        const blob = new Blob([content], { type });
+        const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = JSON_FILE;
+        a.href = url;
+        a.download = fileName;
         a.click();
-        URL.revokeObjectURL(a.href);
+        URL.revokeObjectURL(url);
     }
 
-    // 导出TXT
+    // 生成并下载TXT
     function exportTxt() {
-        const txt = `录播室操作记录
+        const txt = `录播室申请表
 ——————————————
-操作人员：${opLog.user}
+申请人：${opData.name}
+部门：${opData.dept}
+使用日期：${opData.date}
+使用时段：${opData.time}
+申请用途：${opData.purpose}
 操作时间：${new Date().toLocaleString('zh-CN', { hour12: false })}
-操作类型：${opLog.type}
-使用日期：${opLog.date}
-使用时段：${opLog.time}
-申请用途：${opLog.reason}
 
 请领导审核签字`;
-        const blob = new Blob([txt], { type: "text/plain;charset=utf-8" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = TXT_FILE;
-        a.click();
-        URL.revokeObjectURL(a.href);
+        downloadFile(txt, TXT_FILE, "text/plain;charset=utf-8");
     }
 
-    // 导出双文件
-    function exportAll(data) {
-        saveFile(data);
-        exportTxt();
+    // 同步云端：导出完整JSON
+    function syncCloud() {
+        const all = getLocalRecords();
+        downloadFile(JSON.stringify(all, null, 2), JSON_FILE, "application/json");
+        alert("同步成功！已生成：数媒部确认申请表.json");
     }
 
     // 初始化时间段
@@ -464,7 +469,7 @@
             slot.className = "time-slot";
             slot.dataset.hour = h;
             const hh = String(h).padStart(2, "0");
-            slot.innerText = `${hh}:00-${hh}:59`;
+            slot.innerText = `${hh}:00`;
             slot.onclick = () => {
                 if (!slot.classList.contains("conflict")) slot.classList.toggle("selected");
             };
@@ -473,26 +478,26 @@
     }
 
     // 刷新占用时段
-    async function refresh(date) {
-        const list = await load();
+    function refreshOccupied(date) {
+        const list = getLocalRecords();
         document.querySelectorAll(".time-slot").forEach(s => {
             s.classList.remove("conflict");
             s.title = "";
         });
-        list.filter(i => i.date === date).forEach(i => {
-            i.timeSlots.forEach(h => {
+        list.filter(i => i.date === date).forEach(item => {
+            item.timeSlots.forEach(h => {
                 const dom = document.querySelector(`.time-slot[data-hour="${h}"]`);
                 if (dom) {
                     dom.classList.add("conflict");
-                    dom.title = `已被 ${i.name} 占用`;
+                    dom.title = `已被 ${item.name} 占用`;
                 }
             });
         });
     }
 
-    // 渲染列表（删除即将使用的编辑按钮）
-    async function render() {
-        const all = await load();
+    // 渲染列表
+    function render() {
+        const all = getLocalRecords();
         const soon = all.filter(i => i.date >= today);
         const old = all.filter(i => i.date < today);
 
@@ -507,7 +512,7 @@
         document.getElementById("upcomingEmpty").style.display = soon.length ? "none" : "block";
         document.getElementById("expiredEmpty").style.display = old.length ? "none" : "block";
 
-        // 即将使用：只保留删除按钮，去掉编辑
+        // 即将使用：只显示删除
         soon.forEach((item, idx) => {
             const timeStr = item.timeSlots.map(h => `${String(h).padStart(2, '0')}:00`).join("、");
             uBody.innerHTML += `
@@ -515,13 +520,11 @@
                 <td>${item.date}</td>
                 <td>${timeStr}</td>
                 <td>${item.name}</td>
-                <td>
-                    <button class="delete-btn" data-idx="${idx}">删除</button>
-                </td>
+                <td><button class="delete-btn" data-idx="${idx}">删除</button></td>
             </tr>`;
         });
 
-        // 过期记录：只保留删除
+        // 过期记录
         old.forEach(item => {
             const timeStr = item.timeSlots.map(h => `${String(h).padStart(2, '0')}:00`).join("、");
             eBody.innerHTML += `
@@ -533,15 +536,15 @@
             </tr>`;
         });
 
-        bindDeleteEvents();
+        bindDelete();
     }
 
-    // 仅绑定删除事件（去掉编辑）
-    function bindDeleteEvents() {
+    // 删除事件
+    function bindDelete() {
         document.querySelectorAll(".delete-btn").forEach(btn => {
-            btn.onclick = async () => {
+            btn.onclick = () => {
                 if (!confirm("确定删除？")) return;
-                const all = await load();
+                const all = getLocalRecords();
                 let target;
 
                 if (btn.dataset.id) {
@@ -551,67 +554,55 @@
                     target = soon[+btn.dataset.idx];
                 }
 
-                opLog = {
-                    user: target.name,
-                    type: btn.dataset.id ? "删除过期记录" : "删除申请",
+                opData = {
+                    name: target.name,
+                    dept: target.department,
                     date: target.date,
                     time: target.timeSlots.map(h => `${h}:00`).join("、"),
-                    reason: "已删除本条预约"
+                    purpose: "已删除本条申请"
                 };
 
                 const newList = all.filter(i => i.id !== target.id);
-                exportAll(newList);
-                await render();
-                await refresh(document.getElementById("useDate").value);
+                setLocalRecords(newList);
+                exportTxt();
                 document.getElementById("tipsModal").classList.add("active");
+                render();
+                refreshOccupied(document.getElementById("useDate").value);
             };
         });
     }
 
     // 提交表单
-    document.getElementById("applicationForm").addEventListener("submit", async e => {
+    document.getElementById("applicationForm").addEventListener("submit", e => {
         e.preventDefault();
         const name = document.getElementById("applicantName").value.trim();
         const dept = document.getElementById("department").value;
         const date = document.getElementById("useDate").value;
         const purpose = document.getElementById("purpose").value.trim();
-        const slots = Array.from(document.querySelectorAll(".time-slot.selected")).map(s => +s.dataset.hour);
+        const slots = Array.from(document.querySelectorAll(".time-slot.selected")).map(x => +x.dataset.hour);
 
         if (!name || !dept || !date || !purpose || slots.length === 0) {
-            alert("请填写完整信息并选择时段！");
+            alert("请填写完整信息！");
             return;
         }
 
-        opLog = {
-            user: name,
-            type: "新增申请",
-            date: date,
-            time: slots.map(h => `${h}:00`).join("、"),
-            reason: purpose
-        };
+        opData = { name, dept, date, time: slots.map(h => `${h}:00`).join("、"), purpose };
 
-        const list = await load();
-        list.push({
-            id: Date.now().toString(),
-            name,
-            department: dept,
-            date,
-            timeSlots: slots,
-            purpose
-        });
+        const list = getLocalRecords();
+        list.push({ id: Date.now().toString(), name, department: dept, date, timeSlots: slots, purpose });
+        setLocalRecords(list);
 
-        exportAll(list);
-        await render();
-        await refresh(date);
+        exportTxt();
         e.target.reset();
         document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
         document.getElementById("tipsModal").classList.add("active");
+        render();
+        refreshOccupied(date);
     });
 
-    // 确认导出
+    // 弹窗确认
     document.getElementById("confirmBtn").onclick = () => {
         document.getElementById("tipsModal").classList.remove("active");
-        alert("导出成功！\nJSON：发给数媒部\nTXT：打印签字");
     };
 
     // 清空表单
@@ -620,20 +611,21 @@
         document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
     };
 
-    // 初始化页面
-    async function init() {
+    // 同步云端按钮
+    document.getElementById("syncCloudBtn").onclick = syncCloud;
+
+    // 初始化
+    function init() {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
-        const defDate = tomorrow.toISOString().split('T')[0];
-        document.getElementById("useDate").value = defDate;
+        document.getElementById("useDate").value = tomorrow.toISOString().split('T')[0];
         document.getElementById("useDate").min = today;
-
         initSlots();
-        await refresh(defDate);
-        await render();
+        refreshOccupied(document.getElementById("useDate").value);
+        render();
 
-        document.getElementById("useDate").addEventListener("change", async () => {
-            await refresh(document.getElementById("useDate").value);
+        document.getElementById("useDate").addEventListener("change", () => {
+            refreshOccupied(document.getElementById("useDate").value);
             document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
         });
     }
