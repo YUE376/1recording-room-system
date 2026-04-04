@@ -12,7 +12,7 @@
             font-family: 'Microsoft YaHei', sans-serif;
         }
         body {
-            background: linear-gradient(135deg, #f8f9fc 0%, #eef2f9 100%);
+            background: linear-gradient(135deg, #f8f8fc 0%, #eef2f9 100%);
             color: #333;
             padding: 20px;
             min-height: 100vh;
@@ -22,7 +22,7 @@
             margin: 0 auto;
             background: #fff;
             border-radius: 18px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.07);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.07);
             padding: 40px;
             position: relative;
         }
@@ -62,7 +62,7 @@
             background: #fafbfc;
             border-radius: 14px;
             padding: 28px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
         }
         .records-section {
             flex: 1.2;
@@ -75,7 +75,7 @@
             background: #fafbfc;
             border-radius: 14px;
             padding: 24px;
-            box-shadow: 2px 10px 4px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
         }
         .section-title {
             font-size: 19px;
@@ -117,7 +117,7 @@
         }
         input:focus, select:focus, textarea:focus {
             border-color: #4382fb;
-            box-shadow: 0 0 0 3px rgba(67, 129, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(67,129,255,0.1);
             outline: none;
         }
         textarea {
@@ -244,7 +244,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0,0,0,0.5);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -263,7 +263,7 @@
             padding: 30px;
             max-width: 500px;
             width: 90%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             text-align: center;
         }
         .modal-title {
@@ -271,12 +271,6 @@
             color: #1f2937;
             margin-bottom: 15px;
             font-weight: 600;
-        }
-        .modal-text {
-            font-size: 16px;
-            color: #4b5563;
-            line-height: 1.6;
-            margin-bottom: 25px;
         }
         .modal-btn {
             padding: 12px 30px;
@@ -307,7 +301,7 @@
 <div class="container">
     <header>
         <h1>录播室申请管理系统</h1>
-        <p class="subtitle">以云端JSON数据为准，提交即清空本地</p>
+        <p class="subtitle">仅记录本次操作 · 以云端数据为准</p>
     </header>
 
     <div class="main-content">
@@ -359,7 +353,7 @@
 
         <div class="records-section">
             <div class="record-panel">
-                <h2 class="section-title">即将使用（云端数据）</h2>
+                <h2 class="section-title">即将使用</h2>
                 <table class="records-table">
                     <thead>
                         <tr>
@@ -375,7 +369,7 @@
             </div>
 
             <div class="record-panel">
-                <h2 class="section-title expired-title">过期申请记录（云端）</h2>
+                <h2 class="section-title expired-title">过期申请记录</h2>
                 <table class="records-table">
                     <thead>
                         <tr>
@@ -392,190 +386,209 @@
         </div>
     </div>
 
-    <div class="footer">录播室申请管理系统 · 数据最终以云端JSON为准</div>
-</div>
-
-<div class="modal" id="tipsModal">
-    <div class="modal-content">
-        <h3 class="modal-title">纸质申请表提交数媒部后，方算预约成功</h3>
-        <button class="modal-btn" id="confirmBtn">我已知晓</button>
+    <div class="modal" id="tipsModal">
+        <div class="modal-content">
+            <h3 class="modal-title">纸质申请表提交数媒部后，方算预约成功</h3>
+            <button class="modal-btn" id="confirmBtn">我已知晓</button>
+        </div>
     </div>
-</div>
 
 <script>
-    // 文件名固定
-    const TXT_NAME = "录播室申请表.txt";
-    const JSON_NAME = "数媒部确认申请表.json";
-    let cloudData = []; // 全局只存云端内存数据
-    const today = new Date().toISOString().split('T')[0];
+const TXT_NAME = "录播室申请表.txt";
+const JSON_NAME = "数媒部确认申请表.json";
+let cloudData = [];
+let operationLog = [];
+const today = new Date().toISOString().split('T')[0];
 
-    // 1. 强制读取云端JSON（页面初始化只认云端）
-    async function loadCloudJson() {
-        try {
-            const res = await fetch(`./${JSON_NAME}?t=${Date.now()}`);
-            if(res.ok) cloudData = await res.json();
-            else cloudData = [];
-        }catch(e){
-            cloudData = [];
-        }
-        renderAll();
-        refreshTimeSlot();
-    }
+// 初始化：只加载云端
+async function loadCloud() {
+    try {
+        const res = await fetch(`./${JSON_NAME}?t=${Date.now()}`);
+        cloudData = res.ok ? await res.json() : [];
+    } catch (e) { cloudData = []; }
+    render();
+    refreshSlot();
+}
 
-    // 2. 清空本地所有存储（提交时触发）
-    function clearLocalAll(){
-        localStorage.removeItem("records");
-        sessionStorage.clear();
-    }
+// 清空本地
+function clearLocal() {
+    localStorage.clear();
+    sessionStorage.clear();
+}
 
-    // 下载文件
-    function download(content, name, type) {
-        const blob = new Blob([content], { type });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = name;
-        a.click();
-        URL.revokeObjectURL(url);
-    }
+// 下载文件
+function download(content, name, type) {
+    const blob = new Blob([content], { type: type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(url);
+}
 
-    // 导出汇总TXT
-    function exportSummaryTxt() {
-        let content = "录播室申请表（最终云端汇总）\n——————————————————\n";
-        if (cloudData.length === 0) content += "暂无预约记录\n";
-        else {
-            cloudData.forEach((item, idx)=>{
-                let timeStr = item.timeSlots.map(h=>String(h).padStart(2,'0')+":00").join("、");
-                content += `【${idx+1}】申请人：${item.name} | ${item.department}\n日期：${item.date}\n时段：${timeStr}\n用途：${item.purpose}\n\n`;
-            });
-        }
-        content += "提交纸质表至数媒部生效";
-        download(content, TXT_NAME, "text/plain;charset=utf-8");
-    }
+// 导出本次操作 TXT（只显示本次变动）
+function exportCurrentTxt() {
+    let txt = "录播室申请表（本次操作）\n";
+    txt += "——————————————————\n";
+    txt += "操作时间：" + new Date().toLocaleString('zh-CN') + "\n\n";
 
-    // 同步云端：导出当前最新JSON
-    function syncCloud() {
-        download(JSON.stringify(cloudData,null,2), JSON_NAME, "application/json");
-        alert("已导出云端最终JSON，上传覆盖即可！");
-    }
-
-    // 初始化时间段
-    function initSlots() {
-        const box = document.getElementById("timeSlots");
-        box.innerHTML = "";
-        for (let h = 0; h < 24; h++) {
-            const slot = document.createElement("div");
-            slot.className = "time-slot";
-            slot.dataset.hour = h;
-            let hh = String(h).padStart(2,"0");
-            slot.innerText = hh+":00";
-            slot.onclick = ()=>{if(!slot.classList.contains("conflict"))slot.classList.toggle("selected");};
-            box.appendChild(slot);
-        }
-    }
-
-    // 刷新占用时段
-    function refreshTimeSlot(){
-        let selDate = document.getElementById("useDate").value;
-        document.querySelectorAll(".time-slot").forEach(s=>{s.classList.remove("conflict");s.title="";});
-        cloudData.filter(i=>i.date===selDate).forEach(item=>{
-            item.timeSlots.forEach(h=>{
-                let dom = document.querySelector(`.time-slot[data-hour="${h}"]`);
-                if(dom) dom.classList.add("conflict");
-            });
+    if (operationLog.length === 0) {
+        txt += "本次无操作\n";
+    } else {
+        operationLog.forEach(item => {
+            txt += item + "\n";
         });
     }
 
-    // 渲染列表
-    function renderAll(){
-        const soon = cloudData.filter(i => i.date >= today);
-        const old = cloudData.filter(i => i.date < today);
-        soon.sort((a,b)=>new Date(a.date)-new Date(b.date));
-        old.sort((a,b)=>new Date(b.date)-new Date(a.date));
+    txt += "\n纸质表提交数媒部后生效";
+    download(txt, TXT_NAME, "text/plain;charset=utf-8");
+}
 
-        let uBody = document.getElementById("upcomingBody");
-        let eBody = document.getElementById("expiredBody");
-        uBody.innerHTML = eBody.innerHTML = "";
-        document.getElementById("upcomingEmpty").style.display = soon.length?"none":"block";
-        document.getElementById("expiredEmpty").style.display = old.length?"none":"block";
+// 同步云端
+function syncCloud() {
+    download(JSON.stringify(cloudData, null, 2), JSON_NAME, "application/json");
+    alert("已同步云端JSON");
+}
 
-        soon.forEach((item)=>{
-            let t = item.timeSlots.map(h=>String(h).padStart(2,'0')+":00").join("、");
-            uBody.innerHTML += `<tr><td>${item.date}</td><td>${t}</td><td>${item.name}</td><td><button class="delete-btn" data-id="${item.id}">删除</button></td></tr>`;
-        });
-        old.forEach((item)=>{
-            let t = item.timeSlots.map(h=>String(h).padStart(2,'0')+":00").join("、");
-            eBody.innerHTML += `<tr><td>${item.date}</td><td>${t}</td><td>${item.name}</td><td><button class="delete-btn" data-id="${item.id}">删除</button></td></tr>`;
-        });
-        bindDelete();
+// 初始化时间段
+function initSlots() {
+    const box = document.getElementById("timeSlots");
+    box.innerHTML = "";
+    for (let h = 0; h < 24; h++) {
+        const slot = document.createElement("div");
+        slot.className = "time-slot";
+        slot.dataset.hour = h;
+        slot.innerText = String(h).padStart(2, '0') + ":00";
+        slot.onclick = () => {
+            if (!slot.classList.contains("conflict")) slot.classList.toggle("selected");
+        };
+        box.appendChild(slot);
     }
+}
 
-    // 删除：只改内存云端数据，不生成文件
-    function bindDelete(){
-        document.querySelectorAll(".delete-btn").forEach(btn=>{
-            btn.onclick = ()=>{
-                if(!confirm("确定删除？"))return;
-                let delId = btn.dataset.id;
-                cloudData = cloudData.filter(i=>i.id!==delId);
-                renderAll();
-                refreshTimeSlot();
-            };
+// 刷新占用
+function refreshSlot() {
+    const date = document.getElementById("useDate").value;
+    document.querySelectorAll(".time-slot").forEach(s => {
+        s.classList.remove("conflict");
+    });
+    cloudData.filter(i => i.date === date).forEach(item => {
+        item.timeSlots.forEach(h => {
+            const dom = document.querySelector(`.time-slot[data-hour="${h}"]`);
+            if (dom) dom.classList.add("conflict");
         });
-    }
+    });
+}
 
-    // 提交表单：新增数据+导出TXT+清空本地
-    document.getElementById("applicationForm").addEventListener("submit",e=>{
-        e.preventDefault();
-        let name = document.getElementById("applicantName").value.trim();
-        let dept = document.getElementById("department").value;
-        let date = document.getElementById("useDate").value;
-        let purpose = document.getElementById("purpose").value.trim();
-        let slots = Array.from(document.querySelectorAll(".time-slot.selected")).map(x=>+x.dataset.hour);
+// 渲染列表
+function render() {
+    const soon = cloudData.filter(i => i.date >= today);
+    const old = cloudData.filter(i => i.date < today);
+    soon.sort((a, b) => new Date(a.date) - new Date(b.date));
+    old.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        if(!name||!dept||!date||!purpose||slots.length===0){alert("请填全信息并选时段！");return;}
+    const uBody = document.getElementById("upcomingBody");
+    const eBody = document.getElementById("expiredBody");
+    uBody.innerHTML = "";
+    eBody.innerHTML = "";
 
-        // 添加到云端内存
-        cloudData.push({
-            id:Date.now().toString(),
-            name,department:dept,date,timeSlots:slots,purpose
-        });
+    document.getElementById("upcomingEmpty").style.display = soon.length ? "none" : "block";
+    document.getElementById("expiredEmpty").style.display = old.length ? "none" : "block";
 
-        exportSummaryTxt(); // 导出汇总表
-        clearLocalAll();    // 核心：清空本地存储
-        e.target.reset();
-        document.querySelectorAll(".time-slot.selected").forEach(s=>s.classList.remove("selected"));
-        document.getElementById("tipsModal").classList.add("active");
-        renderAll();
-        refreshTimeSlot();
+    soon.forEach(item => {
+        const t = item.timeSlots.map(h => String(h).padStart(2, '0') + ":00").join("、");
+        uBody.innerHTML += `<tr><td>${item.date}</td><td>${t}</td><td>${item.name}</td><td><button class="delete-btn" data-id="${item.id}">删除</button></td></tr>`;
     });
 
-    // 弹窗关闭
-    document.getElementById("confirmBtn").onclick = ()=>{
-        document.getElementById("tipsModal").classList.remove("active");
-    };
+    old.forEach(item => {
+        const t = item.timeSlots.map(h => String(h).padStart(2, '0') + ":00").join("、");
+        eBody.innerHTML += `<tr><td>${item.date}</td><td>${t}</td><td>${item.name}</td><td><button class="delete-btn" data-id="${item.id}">删除</button></td></tr>`;
+    });
 
-    // 清空表单
-    document.getElementById("clearFormBtn").onclick = ()=>{
-        document.getElementById("applicationForm").reset();
-        document.querySelectorAll(".time-slot.selected").forEach(s=>s.classList.remove("selected"));
-    };
+    // 删除事件
+    document.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.onclick = () => {
+            if (!confirm("确定删除？")) return;
+            const id = btn.dataset.id;
+            const delItem = cloudData.find(i => i.id === id);
+            if (delItem) {
+                const t = delItem.timeSlots.map(h => String(h).padStart(2, '0') + ":00").join("、");
+                operationLog.push(`【删除操作】${delItem.name} | ${delItem.date} | ${t}`);
+            }
+            cloudData = cloudData.filter(i => i.id !== id);
+            render();
+            refreshSlot();
+        };
+    });
+}
 
-    // 同步按钮
-    document.getElementById("syncCloudBtn").onclick = syncCloud;
+// 提交表单
+document.getElementById("applicationForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const name = document.getElementById("applicantName").value.trim();
+    const dept = document.getElementById("department").value;
+    const date = document.getElementById("useDate").value;
+    const purpose = document.getElementById("purpose").value.trim();
+    const slots = Array.from(document.querySelectorAll(".time-slot.selected")).map(x => +x.dataset.hour);
 
-    // 日期切换刷新
-    document.getElementById("useDate").addEventListener("change",refreshTimeSlot);
-
-    // 页面初始化：只加载云端！
-    async function init(){
-        let tom = new Date();
-        tom.setDate(tom.getDate()+1);
-        document.getElementById("useDate").value = tom.toISOString().split('T')[0];
-        document.getElementById("useDate").min = today;
-        initSlots();
-        await loadCloudJson();
+    if (!name || !dept || !date || !purpose || slots.length === 0) {
+        alert("请填写完整信息！");
+        return;
     }
-    window.addEventListener("DOMContentLoaded",init);
+
+    // 记录新增
+    const t = slots.map(h => String(h).padStart(2, '0') + ":00").join("、");
+    operationLog.push(`【新增预约】${name} | ${date} | ${t} | ${purpose}`);
+
+    // 加入云端
+    cloudData.push({
+        id: Date.now().toString(),
+        name, department: dept, date, timeSlots: slots, purpose
+    });
+
+    // 导出本次操作 TXT
+    exportCurrentTxt();
+
+    // 清空本地
+    clearLocal();
+
+    // 重置
+    e.target.reset();
+    document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
+    document.getElementById("tipsModal").classList.add("active");
+    operationLog = []; // 清空本次操作记录
+    render();
+    refreshSlot();
+});
+
+// 弹窗关闭
+document.getElementById("confirmBtn").onclick = () => {
+    document.getElementById("tipsModal").classList.remove("active");
+};
+
+// 清空表单
+document.getElementById("clearFormBtn").onclick = () => {
+    document.getElementById("applicationForm").reset();
+    document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
+};
+
+// 同步
+document.getElementById("syncCloudBtn").onclick = syncCloud;
+
+// 日期切换
+document.getElementById("useDate").addEventListener("change", refreshSlot);
+
+// 启动
+async function init() {
+    const tom = new Date();
+    tom.setDate(tom.getDate() + 1);
+    document.getElementById("useDate").value = tom.toISOString().split('T')[0];
+    document.getElementById("useDate").min = today;
+    initSlots();
+    await loadCloud();
+}
+window.addEventListener("DOMContentLoaded", init);
 </script>
 </body>
 </html>
