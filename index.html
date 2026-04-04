@@ -440,65 +440,49 @@
         }
 
         // ====================== 替换：从云端加载申请记录（替代原localStorage） ======================
-        async function loadRecords() {
-            const removeLoading = showLoading('加载云端申请记录...');
-            try {
-                // 调用GitHub API读取文件
-                const response = await fetch(
-                    `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`,
-                    {
-                        headers: {
-                            Authorization: `token ${GITHUB_CONFIG.token}`,
-                            Accept: 'application/vnd.github.v3+json'
-                        }
-                    }
-                );
-
-                if (response.status === 404) {
-                    removeLoading();
-                    return []; // 首次使用无文件，返回空数组
-                }
-
-                if (!response.ok) {
-                    throw new Error(`GitHub API请求失败：${response.status}`);
-                }
-
-                const data = await response.json();
-                // 解码base64内容
-                const content = atob(data.content.replace(/\n/g, ''));
-                const records = JSON.parse(content);
-                removeLoading();
-                return Array.isArray(records) ? records : [];
-            } catch (error) {
-                removeLoading();
-                showCloudError(`读取云端数据失败：${error.message}`);
-                return []; // 降级返回空数组，不影响页面使用
-            }
+async function loadRecords() {
+    const removeLoading = showLoading('加载云端申请记录...');
+    try {
+        // 后面替换成你的Vercel代理地址
+        const response = await fetch('https://你的代理地址/api/records');
+        if (!response.ok) {
+            throw new Error(`请求失败：${response.status}`);
         }
+        const records = await response.json();
+        removeLoading();
+        return Array.isArray(records) ? records : [];
+    } catch (error) {
+        removeLoading();
+        showCloudError(`读取云端数据失败：${error.message}`);
+        return [];
+    }
+}
 
         // ====================== 替换：保存申请记录到云端（替代原localStorage） ======================
-        async function saveRecords(records) {
-            const removeLoading = showLoading('同步数据到云端...');
-            try {
-                // 先获取文件的SHA（用于更新，避免冲突）
-                let sha = '';
-                const getResponse = await fetch(
-                    `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`,
-                    {
-                        headers: {
-                            Authorization: `token ${GITHUB_CONFIG.token}`,
-                            Accept: 'application/vnd.github.v3+json'
-                        }
-                    }
-                );
+ async function saveRecords(records) {
+    const removeLoading = showLoading('同步数据到云端...');
+    try {
+        // 后面替换成你的Vercel代理地址
+        const response = await fetch('https://你的代理地址/api/records', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(records)
+        });
 
-                if (getResponse.ok) {
-                    const getJson = await getResponse.json();
-                    sha = getJson.sha;
-                } else if (getResponse.status !== 404) {
-                    throw new Error(`获取文件信息失败：${getResponse.status}`);
-                }
+        if (!response.ok) {
+            throw new Error(`保存失败：${response.status}`);
+        }
 
+        removeLoading();
+        return true;
+    } catch (error) {
+        removeLoading();
+        showCloudError(`保存云端数据失败：${error.message}`);
+        return false;
+    }
+}
                 // 提交数据到GitHub
                 const response = await fetch(
                     `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`,
