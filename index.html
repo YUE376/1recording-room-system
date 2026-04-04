@@ -9,29 +9,27 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            font-family: 'Microsoft YaHei', sans-serif;
         }
-        
+
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4eaf5 100%);
+            background: linear-gradient(135deg, #f8f9fc 0%, #eef2f9 100%);
             color: #333;
-            line-height: 1.6;
             padding: 20px;
             min-height: 100vh;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background-color: white;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.07);
             padding: 40px;
-            position: relative;
             overflow: hidden;
+            position: relative;
         }
-        
-        /* 顶部装饰条 */
+
         .container::before {
             content: '';
             position: absolute;
@@ -39,670 +37,748 @@
             left: 0;
             width: 100%;
             height: 6px;
-            background: linear-gradient(90deg, #3498db, #2ecc71, #f39c12);
+            background: linear-gradient(90deg, #4381fb, #50c8e6, #62e0b7);
         }
-        
+
         header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 36px;
             padding-bottom: 20px;
-            border-bottom: 2px solid #f0f4f8;
+            border-bottom: 1px solid #f0f4f8;
         }
-        
+
         h1 {
-            color: #2c3e50;
-            margin-bottom: 12px;
             font-size: 28px;
-            font-weight: 700;
-            letter-spacing: 1px;
+            color: #1f2937;
+            margin-bottom: 8px;
+            font-weight: 600;
         }
-        
+
         .subtitle {
-            color: #7f8c8d;
-            font-size: 16px;
-            line-height: 1.5;
+            color: #6b7280;
+            font-size: 15px;
         }
-        
+
         .main-content {
             display: flex;
             flex-wrap: wrap;
-            gap: 40px;
+            gap: 32px;
         }
-        
-        .form-section, .records-section {
+
+        .form-section {
             flex: 1;
-            min-width: 300px;
+            min-width: 320px;
             background: #fafbfc;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            border-radius: 14px;
+            padding: 28px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
         }
-        
+
+        .records-section {
+            flex: 1.2;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .record-panel {
+            background: #fafbfc;
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        }
+
         .section-title {
-            font-size: 22px;
-            color: #3498db;
-            margin-bottom: 25px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #e8f4f8;
+            font-size: 19px;
+            color: #1f2937;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
             display: flex;
             align-items: center;
+            gap: 10px;
         }
-        
+
         .section-title::before {
             content: '';
-            display: inline-block;
-            width: 4px;
-            height: 20px;
-            background: #3498db;
-            margin-right: 10px;
-            border-radius: 2px;
+            width: 5px;
+            height: 18px;
+            background: #4381fb;
+            border-radius: 3px;
         }
-        
+
+        .expired-title::before {
+            background: #9ca3af;
+        }
+
         .form-group {
-            margin-bottom: 24px;
+            margin-bottom: 22px;
         }
-        
+
         label {
             display: block;
-            margin-bottom: 10px;
-            font-weight: 600;
-            color: #2c3e50;
-            font-size: 15px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
         }
-        
+
         input, select, textarea {
             width: 100%;
-            padding: 14px 18px;
-            border: 1px solid #e1e8ed;
+            padding: 13px 16px;
+            border: 1px solid #d1d5db;
             border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: white;
+            font-size: 15px;
+            transition: all 0.25s ease;
         }
-        
+
         input:focus, select:focus, textarea:focus {
-            border-color: #3498db;
+            border-color: #4381fb;
+            box-shadow: 0 0 0 3px rgba(67, 129, 251, 0.1);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
-        
+
         textarea {
-            min-height: 120px;
+            min-height: 110px;
             resize: vertical;
-            line-height: 1.6;
         }
-        
-        /* 时间段选择优化 */
+
         .time-slots {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 10px;
-            margin-top: 12px;
+            gap: 8px;
+            margin-top: 10px;
         }
-        
+
         .time-slot {
-            padding: 12px 8px;
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
+            padding: 10px 6px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
             border-radius: 6px;
             text-align: center;
+            font-size: 13px;
             cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
             user-select: none;
         }
-        
+
         .time-slot:hover:not(.conflict):not(.selected) {
-            background-color: #e8f4f8;
-            border-color: #3498db;
-            transform: translateY(-1px);
+            background: #e0e7ff;
+            border-color: #c7d2fe;
         }
-        
+
         .time-slot.selected {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
-            border-color: #2980b9;
-            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+            background: #4381fb;
+            color: #fff;
+            border-color: #3762d6;
         }
-        
+
         .time-slot.conflict {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            color: white;
-            border-color: #c0392b;
-            cursor: not-allowed;
+            background: #ef4444;
+            color: #fff;
+            border-color: #dc2626;
+            pointer-events: none;
             opacity: 0.9;
-            pointer-events: none; /* 禁用点击 */
         }
-        
+
         .buttons {
             display: flex;
-            gap: 15px;
-            margin-top: 35px;
+            gap: 12px;
+            margin-top: 28px;
             flex-wrap: wrap;
         }
-        
+
         button {
-            padding: 14px 30px;
+            flex: 1;
+            min-width: 120px;
+            padding: 13px 16px;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 15px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            transition: all 0.25s ease;
         }
-        
-        button::before {
-            font-size: 18px;
-        }
-        
+
         .submit-btn {
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-            color: white;
+            background: #16a34a;
+            color: #fff;
         }
-        
+
         .submit-btn:hover {
-            background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
+            background: #15803d;
         }
-        
-        .export-btn {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
-        }
-        
-        .export-btn:hover {
-            background: linear-gradient(135deg, #2980b9 0%, #1e6fa8 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
-        }
-        
+
         .clear-btn {
-            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
-            color: white;
+            background: #6b7280;
+            color: #fff;
         }
-        
+
         .clear-btn:hover {
-            background: linear-gradient(135deg, #7f8c8d 0%, #6c7a7b 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(149, 165, 166, 0.2);
+            background: #4b5563;
         }
-        
-        /* 表格美化 */
+
         .records-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        }
-        
-        .records-table th {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            font-weight: 600;
-            color: #2c3e50;
-            padding: 16px 15px;
-            text-align: left;
-            font-size: 15px;
-            border-bottom: 2px solid #e1e8ed;
-        }
-        
-        .records-table td {
-            padding: 14px 15px;
-            text-align: left;
-            border-bottom: 1px solid #f0f4f8;
             font-size: 14px;
         }
-        
+
+        .records-table th {
+            text-align: left;
+            padding: 12px 10px;
+            color: #4b5563;
+            font-weight: 500;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .records-table td {
+            padding: 11px 10px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
         .records-table tr:hover {
-            background-color: #f8fafc;
+            background: #f9fafb;
         }
-        
-        .records-table tr:last-child td {
-            border-bottom: none;
-        }
-        
+
         .action-buttons {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
-        
-        .edit-btn, .delete-btn {
-            padding: 8px 12px;
-            font-size: 13px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
+
         .edit-btn {
-            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-            color: white;
+            padding: 5px 9px;
+            font-size: 12px;
+            background: #f59e0b;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
         }
-        
-        .edit-btn:hover {
-            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
-        }
-        
+
         .delete-btn {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            color: white;
+            padding: 5px 9px;
+            font-size: 12px;
+            background: #ef4444;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
         }
-        
-        .delete-btn:hover {
-            background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
-        }
-        
-        .footer {
-            margin-top: 40px;
+
+        .empty {
+            padding: 24px;
             text-align: center;
-            color: #7f8c8d;
+            color: #9ca3af;
             font-size: 14px;
+        }
+
+        .footer {
+            margin-top: 36px;
             padding-top: 20px;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 13px;
             border-top: 1px solid #f0f4f8;
         }
-        
-        /* 空数据提示优化 */
-        .empty-records {
-            text-align: center;
-            padding: 40px 20px;
-            color: #7f8c8d;
-            font-size: 15px;
-            background: #fafbfc;
-            border-radius: 8px;
-            margin-top: 15px;
+
+        /* 弹窗样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
-        
-        /* 响应式优化 */
-        @media (max-width: 992px) {
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            color: #1f2937;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .modal-text {
+            font-size: 16px;
+            color: #4b5563;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .modal-btn {
+            padding: 12px 30px;
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .modal-btn:hover {
+            background: #2563eb;
+        }
+
+        @media (max-width: 768px) {
             .time-slots {
                 grid-template-columns: repeat(4, 1fr);
             }
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                padding: 25px;
-            }
-            
-            .main-content {
-                gap: 25px;
-            }
-            
-            .form-section, .records-section {
-                padding: 20px;
-            }
-            
             .buttons {
                 flex-direction: column;
             }
-            
-            button {
-                width: 100%;
-                padding: 14px 20px;
-            }
         }
-        
+
         @media (max-width: 480px) {
             .time-slots {
                 grid-template-columns: repeat(3, 1fr);
-            }
-            
-            h1 {
-                font-size: 24px;
-            }
-            
-            .container {
-                padding: 15px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>录播室申请管理系统</h1>
-            <p class="subtitle">请填写申请信息，选择使用日期和时间段（红色时段不可选）</p>
-        </header>
-        
-        <div class="main-content">
-            <div class="form-section">
-                <h2 class="section-title">申请表单</h2>
-                
-                <form id="applicationForm">
-                    <div class="form-group">
-                        <label for="applicantName">申请人姓名</label>
-                        <input type="text" id="applicantName" placeholder="请输入您的姓名" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="department">选择部门</label>
-                        <select id="department" required>
-                            <option value="">请选择部门</option>
-                            <option value="党政办公室">党政办公室</option>
-                            <option value="总编室">总编室</option>
-                            <option value="校对质检部">校对质检部</option>
-                            <option value="财务部">财务部</option>
-                            <option value="出版部">出版部</option>
-                            <option value="发行部">发行部</option>
-                            <option value="数媒出版事业部">数媒出版事业部</option>
-                            <option value="政治理论编辑室">政治理论编辑室</option>
-                            <option value="经济管理编辑室">经济管理编辑室</option>
-                            <option value="社会建设编辑室">社会建设编辑室</option>
-                            <option value="历史文化编辑室">历史文化编辑室</option>
-                            <option value="译文编辑室">译文编辑室</option>
-                            <option value="教育图书编辑室">教育图书编辑室</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="useDate">使用日期</label>
-                        <input type="date" id="useDate" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>选择使用时间段 (24小时制)</label>
-                        <div class="time-slots" id="timeSlots">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="purpose">申请事由</label>
-                        <textarea id="purpose" placeholder="请详细说明申请使用录播室的事由" required></textarea>
-                    </div>
-                    
-                    <div class="buttons">
-                        <button type="submit" class="submit-btn">提交申请</button>
-                        <button type="button" class="export-btn" id="exportBtn">导出申请记录</button>
-                        <button type="button" class="clear-btn" id="clearFormBtn">清空表单</button>
-                        <button type="button" class="export-btn" onclick="exportToGitHubFile()">同步到云端</button>
-                    </div>
-                </form>
-            </div>
-            
-            <div class="records-section">
-                <h2 class="section-title">申请记录</h2>
-                <div class="table-container">
-                    <table class="records-table" id="recordsTable">
-                        <thead>
-                            <tr>
-                                <th>日期</th>
-                                <th>时间段</th>
-                                <th>申请人</th>
-                                <th>部门</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recordsBody">
-                        </tbody>
-                    </table>
+
+<div class="container">
+    <header>
+        <h1>录播室申请管理系统</h1>
+        <p class="subtitle">选择日期与时段，红色为已占用，无法选择</p>
+    </header>
+
+    <div class="main-content">
+        <div class="form-section">
+            <h2 class="section-title">申请表单</h2>
+            <form id="applicationForm">
+                <div class="form-group">
+                    <label>申请人姓名</label>
+                    <input type="text" id="applicantName" required placeholder="请输入姓名">
                 </div>
-                <p style="margin-top: 15px; color: #7f8c8d; font-size: 14px;">点击"编辑"或"删除"按钮可修改或删除申请记录</p>
-            </div>
+                <div class="form-group">
+                    <label>所属部门</label>
+                    <select id="department" required>
+                        <option value="">请选择部门</option>
+                        <option value="党政办公室">党政办公室</option>
+                        <option value="总编室">总编室</option>
+                        <option value="校对质检部">校对质检部</option>
+                        <option value="财务部">财务部</option>
+                        <option value="出版部">出版部</option>
+                        <option value="发行部">发行部</option>
+                        <option value="数媒出版事业部">数媒出版事业部</option>
+                        <option value="政治理论编辑室">政治理论编辑室</option>
+                        <option value="经济管理编辑室">经济管理编辑室</option>
+                        <option value="社会建设编辑室">社会建设编辑室</option>
+                        <option value="历史文化编辑室">历史文化编辑室</option>
+                        <option value="译文编辑室">译文编辑室</option>
+                        <option value="教育图书编辑室">教育图书编辑室</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>使用日期</label>
+                    <input type="date" id="useDate" required>
+                </div>
+                <div class="form-group">
+                    <label>使用时间段（24小时）</label>
+                    <div class="time-slots" id="timeSlots"></div>
+                </div>
+                <div class="form-group">
+                    <label>申请事由</label>
+                    <textarea id="purpose" required placeholder="请说明用途"></textarea>
+                </div>
+                <div class="buttons">
+                    <button type="submit" class="submit-btn">提交申请表</button>
+                    <button type="button" class="clear-btn" id="clearFormBtn">清空表单</button>
+                </div>
+            </form>
         </div>
-        
-        <div class="footer">
-            <p>录播室申请管理系统 &copy; 2026 - 云端共享版</p>
+
+        <div class="records-section">
+            <div class="record-panel">
+                <h2 class="section-title">即将使用（按最近排序）</h2>
+                <table class="records-table">
+                    <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th>时段</th>
+                            <th>申请人</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="upcomingBody"></tbody>
+                </table>
+                <div id="upcomingEmpty" class="empty">暂无即将使用的申请</div>
+            </div>
+
+            <div class="record-panel">
+                <h2 class="section-title expired-title">过期申请记录</h2>
+                <table class="records-table">
+                    <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th>时段</th>
+                            <th>申请人</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expiredBody"></tbody>
+                </table>
+                <div id="expiredEmpty" class="empty">暂无过期记录</div>
+            </div>
         </div>
     </div>
-    
-    <script>
-        // ====================== 纯 GitHub 安全云端存储 ======================
-        const DATA_FILE = "recording-room-records.json";
 
-        // 从 GitHub 云端加载
-        async function loadRecords() {
-            try {
-                const res = await fetch(`./${DATA_FILE}?t=${Date.now()}`);
-                if (!res.ok) return [];
-                const data = await res.json();
-                return Array.isArray(data) ? data : [];
-            } catch (e) {
-                return [];
-            }
+    <div class="footer">
+        录播室申请管理系统 &copy; 2026 · 云端同步版
+    </div>
+</div>
+
+<!-- 提示弹窗 -->
+<div class="modal" id="tipsModal">
+    <div class="modal-content">
+        <h3 class="modal-title">提交成功</h3>
+        <p class="modal-text">请将申请表格以及修改记录提交给数媒部负责人</p>
+        <button class="modal-btn" id="confirmBtn">已知晓</button>
+    </div>
+</div>
+
+<script>
+    const DATA_FILE = "recording-room-records.json";
+    const todayStr = new Date().toISOString().split('T')[0];
+    let lastOperation = ""; // 记录最后一次操作内容
+    let lastOperatorName = ""; // 记录最后操作的申请人姓名
+
+    // 格式化时间（用于文件名）：yyyy-mm-dd hh:mm:ss
+    function formatDateTime(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hour = String(date.getHours()).padStart(2, '0');
+        const minute = String(date.getMinutes()).padStart(2, '0');
+        const second = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+    }
+
+    // 从云端加载记录
+    async function loadRecords() {
+        try {
+            const res = await fetch(`./${DATA_FILE}?t=${Date.now()}`);
+            if (!res.ok) return [];
+            return await res.json() || [];
+        } catch (e) {
+            return [];
         }
+    }
 
-        // 保存到本地缓存
-        function saveRecords(records) {
-            localStorage.setItem("recordingRoomRecords", JSON.stringify(records));
+    // 保存到本地
+    function saveRecords(records) {
+        localStorage.setItem("recordingRoomRecords", JSON.stringify(records));
+    }
+
+    // 导出文件通用方法
+    function exportFile(content, filename, type) {
+        const blob = new Blob([content], { type: type });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(a.href);
+    }
+
+    // 导出双文件（JSON数据 + TXT操作记录）
+    function exportDualFiles(operationDesc) {
+        // 1. 导出JSON数据文件
+        const records = JSON.parse(localStorage.getItem("recordingRoomRecords")) || [];
+        exportFile(JSON.stringify(records, null, 2), DATA_FILE, "application/json");
+
+        // 2. 导出TXT操作记录文件（按新规则命名）
+        const now = new Date();
+        const timeStr = formatDateTime(now);
+        const userName = lastOperatorName || "未知用户";
+        // 文件名：申请人姓名.修改时间.txt
+        const txtFilename = `${userName}.${timeStr}.txt`;
+        
+        const txtContent = `录播室申请系统操作记录
+============================
+操作时间：${timeStr}
+操作人：${userName}
+操作内容：${operationDesc}
+
+本次完整申请记录：
+${JSON.stringify(records.slice(-1)[0] || {}, null, 2)}
+============================
+提示：请将此文件和${DATA_FILE}一并提交给数媒部负责人`;
+        
+        exportFile(txtContent, txtFilename, "text/plain;charset=utf-8");
+    }
+
+    // 初始化24小时时间段
+    function initTimeSlots() {
+        const box = document.getElementById("timeSlots");
+        box.innerHTML = "";
+        for (let h = 0; h < 24; h++) {
+            const slot = document.createElement("div");
+            slot.className = "time-slot";
+            slot.dataset.hour = h;
+            const hh = String(h).padStart(2, '0');
+            slot.innerText = `${hh}:00-${hh}:59`;
+            slot.onclick = () => {
+                if (!slot.classList.contains("conflict")) {
+                    slot.classList.toggle("selected");
+                }
+            };
+            box.appendChild(slot);
         }
+    }
 
-        // 一键导出可上传到 GitHub 的 JSON 文件
-        function exportToGitHubFile() {
-            const records = JSON.parse(localStorage.getItem("recordingRoomRecords")) || [];
-            const blob = new Blob([JSON.stringify(records, null, 2)], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = DATA_FILE;
-            a.click();
-            URL.revokeObjectURL(url);
-            alert("导出成功！请将下载的 recording-room-records.json 上传覆盖到 GitHub 仓库根目录，所有人即可看到最新数据。");
-        }
+    // 刷新占用时段（标红禁用）
+    async function refreshOccupiedSlots(date) {
+        const records = await loadRecords();
+        document.querySelectorAll(".time-slot").forEach(s => {
+            s.classList.remove("conflict");
+            s.title = "";
+        });
 
-        // ====================== 核心功能优化 ======================
-        function initTimeSlots() {
-            const timeSlotsContainer = document.getElementById('timeSlots');
-            timeSlotsContainer.innerHTML = '';
-            for (let hour = 0; hour < 24; hour++) {
-                const timeSlot = document.createElement('div');
-                timeSlot.className = 'time-slot';
-                timeSlot.dataset.hour = hour;
-                const displayHour = hour.toString().padStart(2, '0');
-                timeSlot.textContent = `${displayHour}:00-${displayHour}:59`;
-                timeSlot.addEventListener('click', function() {
-                    // 只有非冲突时段才能选中/取消
-                    if (!this.classList.contains('conflict')) {
-                        this.classList.toggle('selected');
-                    }
-                });
-                timeSlotsContainer.appendChild(timeSlot);
-            }
-        }
-
-        // 更新时间段状态（标红禁用占用时段）
-        async function updateTimeSlotStatus(selectedDate) {
-            const records = await loadRecords();
-            // 重置所有时段状态
-            document.querySelectorAll('.time-slot').forEach(slot => {
-                slot.classList.remove('conflict');
-                slot.title = '';
-            });
-            
-            // 标红禁用占用时段
-            const dateRecords = records.filter(r => r.date === selectedDate);
-            dateRecords.forEach(r => {
-                r.timeSlots.forEach(hour => {
-                    const slot = document.querySelector(`.time-slot[data-hour="${hour}"]`);
-                    if (slot) {
-                        slot.classList.add('conflict');
-                        slot.title = `已被 ${r.name} (${r.department}) 占用`;
-                    }
-                });
-            });
-        }
-
-        async function displayRecords() {
-            const records = await loadRecords();
-            const recordsBody = document.getElementById('recordsBody');
-            recordsBody.innerHTML = '';
-            
-            if (records.length === 0) {
-                recordsBody.innerHTML = '<tr><td colspan="5" class="empty-records">暂无申请记录</td></tr>';
-                return;
-            }
-            
-            records.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            records.forEach((record, index) => {
-                const row = document.createElement('tr');
-                const timeSlots = record.timeSlots.map(hour => {
-                    const displayHour = hour.toString().padStart(2, '0');
-                    return `${displayHour}:00`;
-                }).join(', ');
-                
-                row.innerHTML = `
-                    <td>${record.date}</td>
-                    <td>${timeSlots}</td>
-                    <td>${record.name}</td>
-                    <td>${record.department}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="edit-btn" data-index="${index}">编辑</button>
-                            <button class="delete-btn" data-index="${index}">删除</button>
-                        </div>
-                    </td>
-                `;
-                recordsBody.appendChild(row);
-            });
-            
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    editRecord(parseInt(this.dataset.index));
-                });
-            });
-            
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    deleteRecord(parseInt(this.dataset.index));
-                });
-            });
-        }
-
-        async function submitApplication(event) {
-            event.preventDefault();
-            const name = document.getElementById('applicantName').value.trim();
-            const department = document.getElementById('department').value;
-            const date = document.getElementById('useDate').value;
-            const purpose = document.getElementById('purpose').value.trim();
-            const selectedTimeSlots = Array.from(document.querySelectorAll('.time-slot.selected')).map(slot => parseInt(slot.dataset.hour));
-            
-            if (!name || !department || !date || !purpose || selectedTimeSlots.length === 0) {
-                alert('请填写所有必填项并选择至少一个时间段！');
-                return;
-            }
-            
-            // 直接提交（无需冲突检查，因为占用时段已禁用）
-            const records = await loadRecords();
-            records.push({
-                id: Date.now(),
-                name,
-                department,
-                date,
-                timeSlots: selectedTimeSlots,
-                purpose,
-                submitTime: new Date().toLocaleString('zh-CN')
-            });
-            
-            saveRecords(records);
-            await displayRecords();
-            document.getElementById('applicationForm').reset();
-            document.querySelectorAll('.time-slot.selected').forEach(slot => slot.classList.remove('selected'));
-            // 重新更新时段状态
-            await updateTimeSlotStatus(date);
-            alert('申请提交成功！请点击【同步到云端】发布到 GitHub 共享。');
-        }
-
-        async function editRecord(index) {
-            const records = await loadRecords();
-            const record = records[index];
-            document.getElementById('applicantName').value = record.name;
-            document.getElementById('department').value = record.department;
-            document.getElementById('useDate').value = record.date;
-            document.getElementById('purpose').value = record.purpose;
-            
-            // 先更新时段状态
-            await updateTimeSlotStatus(record.date);
-            
-            // 选中原有时段（排除已被占用的）
-            document.querySelectorAll('.time-slot.selected').forEach(slot => slot.classList.remove('selected'));
-            record.timeSlots.forEach(hour => {
-                const slot = document.querySelector(`.time-slot[data-hour="${hour}"]`);
-                if (slot && !slot.classList.contains('conflict')) {
-                    slot.classList.add('selected');
+        records.filter(r => r.date === date).forEach(r => {
+            r.timeSlots.forEach(h => {
+                const slot = document.querySelector(`.time-slot[data-hour="${h}"]`);
+                if (slot) {
+                    slot.classList.add("conflict");
+                    slot.title = `已被 ${r.name}（${r.department}）占用`;
                 }
             });
-            
-            records.splice(index, 1);
-            saveRecords(records);
-            await displayRecords();
-            document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
-            alert('已加载到表单，请修改后重新提交。');
+        });
+    }
+
+    // 渲染：即将使用 + 过期记录
+    async function renderAllRecords() {
+        const records = await loadRecords();
+        const upcoming = records.filter(r => r.date >= todayStr);
+        const expired = records.filter(r => r.date < todayStr);
+
+        upcoming.sort((a, b) => new Date(a.date) - new Date(b.date));
+        expired.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        const uBody = document.getElementById("upcomingBody");
+        const eBody = document.getElementById("expiredBody");
+        uBody.innerHTML = "";
+        eBody.innerHTML = "";
+
+        document.getElementById("upcomingEmpty").style.display = upcoming.length ? "none" : "block";
+        document.getElementById("expiredEmpty").style.display = expired.length ? "none" : "block";
+
+        upcoming.forEach((item, i) => {
+            const tr = document.createElement("tr");
+            const times = item.timeSlots.map(h => String(h).padStart(2, '0') + ":00").join(", ");
+            tr.innerHTML = `
+                <td>${item.date}</td>
+                <td>${times}</td>
+                <td>${item.name}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="edit-btn" data-idx="${i}">编辑</button>
+                        <button class="delete-btn" data-idx="${i}">删除</button>
+                    </div>
+                </td>`;
+            uBody.appendChild(tr);
+        });
+
+        expired.forEach(item => {
+            const tr = document.createElement("tr");
+            const times = item.timeSlots.map(h => String(h).padStart(2, '0') + ":00").join(", ");
+            tr.innerHTML = `
+                <td>${item.date}</td>
+                <td>${times}</td>
+                <td>${item.name}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="delete-btn" data-id="${item.id}">删除</button>
+                    </div>
+                </td>`;
+            eBody.appendChild(tr);
+        });
+
+        // 绑定事件
+        uBody.querySelectorAll(".edit-btn").forEach(btn => {
+            btn.onclick = async () => await editUpcoming(+btn.dataset.idx);
+        });
+        uBody.querySelectorAll(".delete-btn").forEach(btn => {
+            btn.onclick = async () => await deleteUpcoming(+btn.dataset.idx);
+        });
+        eBody.querySelectorAll(".delete-btn").forEach(btn => {
+            btn.onclick = async () => await deleteExpired(btn.dataset.id);
+        });
+    }
+
+    // 提交申请（合并同步云端功能）
+    document.getElementById("applicationForm").addEventListener("submit", async e => {
+        e.preventDefault();
+        const name = document.getElementById("applicantName").value.trim();
+        const dept = document.getElementById("department").value;
+        const date = document.getElementById("useDate").value;
+        const purpose = document.getElementById("purpose").value.trim();
+        const selectedSlots = Array.from(document.querySelectorAll(".time-slot.selected")).map(s => +s.dataset.hour);
+
+        if (!name || !dept || !date || !purpose || selectedSlots.length === 0) {
+            alert("请填写完整信息并选择时间段！");
+            return;
         }
 
-        async function deleteRecord(index) {
-            if (confirm('确定要删除这条申请记录吗？')) {
-                const records = await loadRecords();
-                const deletedRecord = records[index];
-                records.splice(index, 1);
-                saveRecords(records);
-                await displayRecords();
-                // 删除后更新时段状态
-                await updateTimeSlotStatus(deletedRecord.date);
-                alert('记录已删除。');
-            }
-        }
+        // 记录本次操作人和操作内容
+        lastOperatorName = name;
+        const timesStr = selectedSlots.map(h => String(h).padStart(2, '0') + ":00").join(", ");
+        lastOperation = `新增申请：申请人${name}（${dept}），申请${date} ${timesStr}使用录播室，事由：${purpose}`;
 
-        async function exportRecords() {
-            const records = await loadRecords();
-            if (records.length === 0) { alert('暂无记录'); return; }
-            let exportContent = '录播室申请记录\n导出时间：' + new Date().toLocaleString('zh-CN') + '\n';
-            records.forEach((r, i) => {
-                exportContent += `\n记录 ${i+1}\n日期：${r.date}\n时间：${r.timeSlots.map(h=>`${h.toString().padStart(2,'0')}:00`).join(',')}\n申请人：${r.name}\n部门：${r.department}\n事由：${r.purpose}\n`;
-            });
-            const blob = new Blob([exportContent], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `录播室记录_${new Date().toISOString().slice(0,10)}.txt`;
-            a.click();
-            URL.revokeObjectURL(url);
-            alert('导出成功！');
-        }
+        // 保存申请记录
+        const records = await loadRecords();
+        records.push({
+            id: Date.now().toString(),
+            name,
+            department: dept,
+            date,
+            timeSlots: selectedSlots,
+            purpose,
+            submitTime: new Date().toLocaleString()
+        });
 
-        function clearForm() {
-            if (confirm('清空表单？')) {
-                document.getElementById('applicationForm').reset();
-                document.querySelectorAll('.time-slot.selected').forEach(s => s.classList.remove('selected'));
-            }
-        }
+        saveRecords(records);
+        await renderAllRecords();
+        await refreshOccupiedSlots(date);
+        document.getElementById("applicationForm").reset();
+        document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
 
-        async function initPage() {
-            // 设置默认日期为明天
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const fmt = tomorrow.toISOString().split('T')[0];
-            document.getElementById('useDate').value = fmt;
-            document.getElementById('useDate').min = new Date().toISOString().split('T')[0];
-            
-            // 初始化时间段
-            initTimeSlots();
-            // 初始化时段状态
-            await updateTimeSlotStatus(fmt);
-            // 显示记录
-            await displayRecords();
-            
-            // 绑定事件
-            document.getElementById('applicationForm').addEventListener('submit', submitApplication);
-            document.getElementById('exportBtn').addEventListener('click', exportRecords);
-            document.getElementById('clearFormBtn').addEventListener('click', clearForm);
-            
-            // 日期变更时更新时段状态
-            document.getElementById('useDate').addEventListener('change', async function() {
-                const selectedDate = this.value;
-                await updateTimeSlotStatus(selectedDate);
-                // 清空已选时段
-                document.querySelectorAll('.time-slot.selected').forEach(s => s.classList.remove('selected'));
-            });
-        }
+        // 显示提示弹窗
+        document.getElementById("tipsModal").classList.add("active");
+    });
 
-        document.addEventListener('DOMContentLoaded', initPage);
-    </script>
+    // 弹窗已知晓按钮事件
+    document.getElementById("confirmBtn").addEventListener("click", () => {
+        // 关闭弹窗
+        document.getElementById("tipsModal").classList.remove("active");
+        // 导出双文件
+        exportDualFiles(lastOperation);
+        alert("文件导出成功！请将导出的两个文件提交给数媒部负责人。");
+    });
+
+    // 清空表单
+    document.getElementById("clearFormBtn").onclick = () => {
+        document.getElementById("applicationForm").reset();
+        document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
+    };
+
+    // 编辑即将使用
+    async function editUpcoming(index) {
+        const records = await loadRecords();
+        const upcoming = records.filter(r => r.date >= todayStr);
+        const item = upcoming[index];
+        const allRecords = await loadRecords();
+        const realIndex = allRecords.findIndex(x => x.id === item.id);
+        if (realIndex === -1) return;
+
+        // 记录编辑操作人和内容
+        lastOperatorName = item.name;
+        lastOperation = `编辑申请：原申请人${item.name}（${item.department}），${item.date}的申请记录已加载到表单待修改`;
+
+        document.getElementById("applicantName").value = item.name;
+        document.getElementById("department").value = item.department;
+        document.getElementById("useDate").value = item.date;
+        document.getElementById("purpose").value = item.purpose;
+
+        await refreshOccupiedSlots(item.date);
+        document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
+        item.timeSlots.forEach(h => {
+            const slot = document.querySelector(`.time-slot[data-hour="${h}"]`);
+            if (slot && !slot.classList.contains("conflict")) slot.classList.add("selected");
+        });
+
+        allRecords.splice(realIndex, 1);
+        saveRecords(allRecords);
+        await renderAllRecords();
+        alert("已加载到表单，请修改后重新提交。");
+    }
+
+    // 删除即将使用
+    async function deleteUpcoming(index) {
+        if (!confirm("确定删除这条申请？")) return;
+        const records = await loadRecords();
+        const upcoming = records.filter(r => r.date >= todayStr);
+        const item = upcoming[index];
+        
+        // 记录删除操作人和内容
+        lastOperatorName = item.name;
+        const timesStr = item.timeSlots.map(h => String(h).padStart(2, '0') + ":00").join(", ");
+        lastOperation = `删除申请：删除${item.name}（${item.department}）在${item.date} ${timesStr}的录播室申请`;
+
+        const newRecords = records.filter(x => x.id !== item.id);
+        saveRecords(newRecords);
+        await renderAllRecords();
+        await refreshOccupiedSlots(document.getElementById("useDate").value);
+        
+        // 显示提示弹窗
+        document.getElementById("tipsModal").classList.add("active");
+    }
+
+    // 删除过期记录
+    async function deleteExpired(id) {
+        if (!confirm("确定删除这条过期记录？")) return;
+        const records = await loadRecords();
+        const item = records.find(x => x.id === id);
+        
+        // 记录删除操作人和内容
+        lastOperatorName = item.name;
+        const timesStr = item.timeSlots.map(h => String(h).padStart(2, '0') + ":00").join(", ");
+        lastOperation = `删除过期申请：删除${item.name}（${item.department}）在${item.date} ${timesStr}的录播室申请`;
+
+        const newRecords = records.filter(x => x.id !== id);
+        saveRecords(newRecords);
+        await renderAllRecords();
+        
+        // 显示提示弹窗
+        document.getElementById("tipsModal").classList.add("active");
+    }
+
+    // 初始化页面
+    async function initPage() {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const defaultDate = tomorrow.toISOString().split('T')[0];
+        document.getElementById("useDate").value = defaultDate;
+        document.getElementById("useDate").min = todayStr;
+
+        initTimeSlots();
+        await refreshOccupiedSlots(defaultDate);
+        await renderAllRecords();
+
+        document.getElementById("useDate").addEventListener("change", async () => {
+            await refreshOccupiedSlots(document.getElementById("useDate").value);
+            document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
+        });
+    }
+
+    window.addEventListener("DOMContentLoaded", initPage);
+</script>
 </body>
 </html>
