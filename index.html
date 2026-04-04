@@ -9,194 +9,262 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Microsoft YaHei', sans-serif;
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
         }
         
         body {
-            background-color: #f5f7fa;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4eaf5 100%);
             color: #333;
             line-height: 1.6;
             padding: 20px;
+            min-height: 100vh;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
             background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 顶部装饰条 */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, #3498db, #2ecc71, #f39c12);
         }
         
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             padding-bottom: 20px;
-            border-bottom: 2px solid #eaeaea;
+            border-bottom: 2px solid #f0f4f8;
         }
         
         h1 {
             color: #2c3e50;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
         
         .subtitle {
             color: #7f8c8d;
             font-size: 16px;
+            line-height: 1.5;
         }
         
         .main-content {
             display: flex;
             flex-wrap: wrap;
-            gap: 30px;
+            gap: 40px;
         }
         
-        .form-section {
+        .form-section, .records-section {
             flex: 1;
             min-width: 300px;
-        }
-        
-        .records-section {
-            flex: 1;
-            min-width: 300px;
+            background: #fafbfc;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
         }
         
         .section-title {
-            font-size: 20px;
+            font-size: 22px;
             color: #3498db;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e8f4f8;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 20px;
+            background: #3498db;
+            margin-right: 10px;
+            border-radius: 2px;
         }
         
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-weight: 600;
             color: #2c3e50;
+            font-size: 15px;
         }
         
         input, select, textarea {
             width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            padding: 14px 18px;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
             font-size: 16px;
-            transition: border-color 0.3s;
+            transition: all 0.3s ease;
+            background: white;
         }
         
         input:focus, select:focus, textarea:focus {
             border-color: #3498db;
             outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
         
         textarea {
-            min-height: 100px;
+            min-height: 120px;
             resize: vertical;
+            line-height: 1.6;
         }
         
+        /* 时间段选择优化 */
         .time-slots {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 8px;
-            margin-top: 10px;
+            gap: 10px;
+            margin-top: 12px;
         }
         
         .time-slot {
-            padding: 8px 5px;
+            padding: 12px 8px;
             background-color: #f8f9fa;
             border: 1px solid #dee2e6;
-            border-radius: 4px;
+            border-radius: 6px;
             text-align: center;
             cursor: pointer;
             font-size: 14px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            user-select: none;
         }
         
-        .time-slot:hover {
-            background-color: #e9ecef;
+        .time-slot:hover:not(.conflict):not(.selected) {
+            background-color: #e8f4f8;
+            border-color: #3498db;
+            transform: translateY(-1px);
         }
         
         .time-slot.selected {
-            background-color: #3498db;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
             color: white;
             border-color: #2980b9;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
         }
         
         .time-slot.conflict {
-            background-color: #e74c3c;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
             color: white;
             border-color: #c0392b;
+            cursor: not-allowed;
+            opacity: 0.9;
+            pointer-events: none; /* 禁用点击 */
         }
         
         .buttons {
             display: flex;
             gap: 15px;
-            margin-top: 30px;
+            margin-top: 35px;
             flex-wrap: wrap;
         }
         
         button {
-            padding: 12px 25px;
+            padding: 14px 30px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        button::before {
+            font-size: 18px;
         }
         
         .submit-btn {
-            background-color: #2ecc71;
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
             color: white;
         }
         
         .submit-btn:hover {
-            background-color: #27ae60;
+            background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
         }
         
         .export-btn {
-            background-color: #3498db;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
             color: white;
         }
         
         .export-btn:hover {
-            background-color: #2980b9;
+            background: linear-gradient(135deg, #2980b9 0%, #1e6fa8 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
         }
         
         .clear-btn {
-            background-color: #95a5a6;
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
             color: white;
         }
         
         .clear-btn:hover {
-            background-color: #7f8c8d;
+            background: linear-gradient(135deg, #7f8c8d 0%, #6c7a7b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(149, 165, 166, 0.2);
         }
         
+        /* 表格美化 */
         .records-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
-        }
-        
-        .records-table th, .records-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
         
         .records-table th {
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             font-weight: 600;
             color: #2c3e50;
+            padding: 16px 15px;
+            text-align: left;
+            font-size: 15px;
+            border-bottom: 2px solid #e1e8ed;
+        }
+        
+        .records-table td {
+            padding: 14px 15px;
+            text-align: left;
+            border-bottom: 1px solid #f0f4f8;
+            font-size: 14px;
         }
         
         .records-table tr:hover {
-            background-color: #f8f9fa;
+            background-color: #f8fafc;
+        }
+        
+        .records-table tr:last-child td {
+            border-bottom: none;
         }
         
         .action-buttons {
@@ -205,84 +273,70 @@
         }
         
         .edit-btn, .delete-btn {
-            padding: 5px 10px;
-            font-size: 14px;
-            border-radius: 3px;
+            padding: 8px 12px;
+            font-size: 13px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
         }
         
         .edit-btn {
-            background-color: #f39c12;
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
             color: white;
         }
         
         .edit-btn:hover {
-            background-color: #d68910;
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
         }
         
         .delete-btn {
-            background-color: #e74c3c;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
             color: white;
         }
         
         .delete-btn:hover {
-            background-color: #c0392b;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .modal-content {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-        }
-        
-        .modal-title {
-            font-size: 20px;
-            margin-bottom: 15px;
-            color: #e74c3c;
-        }
-        
-        .modal-message {
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-        
-        .modal-close {
-            background-color: #3498db;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            float: right;
+            background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
         }
         
         .footer {
-            margin-top: 30px;
+            margin-top: 40px;
             text-align: center;
             color: #7f8c8d;
             font-size: 14px;
             padding-top: 20px;
-            border-top: 1px solid #eee;
+            border-top: 1px solid #f0f4f8;
+        }
+        
+        /* 空数据提示优化 */
+        .empty-records {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+            font-size: 15px;
+            background: #fafbfc;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        /* 响应式优化 */
+        @media (max-width: 992px) {
+            .time-slots {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
         
         @media (max-width: 768px) {
-            .time-slots {
-                grid-template-columns: repeat(4, 1fr);
+            .container {
+                padding: 25px;
+            }
+            
+            .main-content {
+                gap: 25px;
+            }
+            
+            .form-section, .records-section {
+                padding: 20px;
             }
             
             .buttons {
@@ -291,12 +345,17 @@
             
             button {
                 width: 100%;
+                padding: 14px 20px;
             }
         }
         
         @media (max-width: 480px) {
             .time-slots {
                 grid-template-columns: repeat(3, 1fr);
+            }
+            
+            h1 {
+                font-size: 24px;
             }
             
             .container {
@@ -309,7 +368,7 @@
     <div class="container">
         <header>
             <h1>录播室申请管理系统</h1>
-            <p class="subtitle">请填写申请信息，选择使用日期和时间段</p>
+            <p class="subtitle">请填写申请信息，选择使用日期和时间段（红色时段不可选）</p>
         </header>
         
         <div class="main-content">
@@ -393,14 +452,6 @@
         </div>
     </div>
     
-    <div class="modal" id="conflictModal">
-        <div class="modal-content">
-            <h3 class="modal-title">时间冲突提示</h3>
-            <p class="modal-message" id="conflictMessage"></p>
-            <button class="modal-close" id="closeModalBtn">确定</button>
-        </div>
-    </div>
-    
     <script>
         // ====================== 纯 GitHub 安全云端存储 ======================
         const DATA_FILE = "recording-room-records.json";
@@ -435,7 +486,7 @@
             alert("导出成功！请将下载的 recording-room-records.json 上传覆盖到 GitHub 仓库根目录，所有人即可看到最新数据。");
         }
 
-        // ====================== 原有业务逻辑完全保留 ======================
+        // ====================== 核心功能优化 ======================
         function initTimeSlots() {
             const timeSlotsContainer = document.getElementById('timeSlots');
             timeSlotsContainer.innerHTML = '';
@@ -446,10 +497,35 @@
                 const displayHour = hour.toString().padStart(2, '0');
                 timeSlot.textContent = `${displayHour}:00-${displayHour}:59`;
                 timeSlot.addEventListener('click', function() {
-                    this.classList.toggle('selected');
+                    // 只有非冲突时段才能选中/取消
+                    if (!this.classList.contains('conflict')) {
+                        this.classList.toggle('selected');
+                    }
                 });
                 timeSlotsContainer.appendChild(timeSlot);
             }
+        }
+
+        // 更新时间段状态（标红禁用占用时段）
+        async function updateTimeSlotStatus(selectedDate) {
+            const records = await loadRecords();
+            // 重置所有时段状态
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('conflict');
+                slot.title = '';
+            });
+            
+            // 标红禁用占用时段
+            const dateRecords = records.filter(r => r.date === selectedDate);
+            dateRecords.forEach(r => {
+                r.timeSlots.forEach(hour => {
+                    const slot = document.querySelector(`.time-slot[data-hour="${hour}"]`);
+                    if (slot) {
+                        slot.classList.add('conflict');
+                        slot.title = `已被 ${r.name} (${r.department}) 占用`;
+                    }
+                });
+            });
         }
 
         async function displayRecords() {
@@ -458,7 +534,7 @@
             recordsBody.innerHTML = '';
             
             if (records.length === 0) {
-                recordsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #7f8c8d;">暂无申请记录</td></tr>';
+                recordsBody.innerHTML = '<tr><td colspan="5" class="empty-records">暂无申请记录</td></tr>';
                 return;
             }
             
@@ -499,39 +575,6 @@
             });
         }
 
-        async function checkTimeConflict(date, timeSlots) {
-            const records = await loadRecords();
-            for (const record of records) {
-                if (record.date === date) {
-                    const hasConflict = timeSlots.some(slot => record.timeSlots.includes(slot));
-                    if (hasConflict) {
-                        return { conflict: true, conflictingRecord: record };
-                    }
-                }
-            }
-            return { conflict: false };
-        }
-
-        function showConflictMessage(conflictingRecord, date, timeSlots) {
-            const conflictMessage = document.getElementById('conflictMessage');
-            const conflictModal = document.getElementById('conflictModal');
-            
-            const conflictTimes = timeSlots.filter(slot => conflictingRecord.timeSlots.includes(slot)).map(hour => {
-                const displayHour = hour.toString().padStart(2, '0');
-                return `${displayHour}:00-${displayHour}:59`;
-            }).join(', ');
-            
-            conflictMessage.textContent = `您选择的时间段与已有申请冲突！\n\n冲突时间：${date} ${conflictTimes}\n冲突申请人：${conflictingRecord.name}\n所属部门：${conflictingRecord.department}\n\n请选择其他时间段。`;
-            conflictModal.style.display = 'flex';
-            
-            document.querySelectorAll('.time-slot').forEach(slot => {
-                const hour = parseInt(slot.dataset.hour);
-                if (conflictingRecord.timeSlots.includes(hour)) {
-                    slot.classList.add('conflict');
-                }
-            });
-        }
-
         async function submitApplication(event) {
             event.preventDefault();
             const name = document.getElementById('applicantName').value.trim();
@@ -545,12 +588,7 @@
                 return;
             }
             
-            const conflictCheck = await checkTimeConflict(date, selectedTimeSlots);
-            if (conflictCheck.conflict) {
-                showConflictMessage(conflictCheck.conflictingRecord, date, selectedTimeSlots);
-                return;
-            }
-            
+            // 直接提交（无需冲突检查，因为占用时段已禁用）
             const records = await loadRecords();
             records.push({
                 id: Date.now(),
@@ -566,7 +604,8 @@
             await displayRecords();
             document.getElementById('applicationForm').reset();
             document.querySelectorAll('.time-slot.selected').forEach(slot => slot.classList.remove('selected'));
-            document.querySelectorAll('.time-slot.conflict').forEach(slot => slot.classList.remove('conflict'));
+            // 重新更新时段状态
+            await updateTimeSlotStatus(date);
             alert('申请提交成功！请点击【同步到云端】发布到 GitHub 共享。');
         }
 
@@ -578,10 +617,16 @@
             document.getElementById('useDate').value = record.date;
             document.getElementById('purpose').value = record.purpose;
             
+            // 先更新时段状态
+            await updateTimeSlotStatus(record.date);
+            
+            // 选中原有时段（排除已被占用的）
             document.querySelectorAll('.time-slot.selected').forEach(slot => slot.classList.remove('selected'));
             record.timeSlots.forEach(hour => {
                 const slot = document.querySelector(`.time-slot[data-hour="${hour}"]`);
-                if (slot) slot.classList.add('selected');
+                if (slot && !slot.classList.contains('conflict')) {
+                    slot.classList.add('selected');
+                }
             });
             
             records.splice(index, 1);
@@ -594,9 +639,12 @@
         async function deleteRecord(index) {
             if (confirm('确定要删除这条申请记录吗？')) {
                 const records = await loadRecords();
+                const deletedRecord = records[index];
                 records.splice(index, 1);
                 saveRecords(records);
                 await displayRecords();
+                // 删除后更新时段状态
+                await updateTimeSlotStatus(deletedRecord.date);
                 alert('记录已删除。');
             }
         }
@@ -622,47 +670,35 @@
             if (confirm('清空表单？')) {
                 document.getElementById('applicationForm').reset();
                 document.querySelectorAll('.time-slot.selected').forEach(s => s.classList.remove('selected'));
-                document.querySelectorAll('.time-slot.conflict').forEach(s => s.classList.remove('conflict'));
             }
         }
 
         async function initPage() {
+            // 设置默认日期为明天
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const fmt = tomorrow.toISOString().split('T')[0];
             document.getElementById('useDate').value = fmt;
             document.getElementById('useDate').min = new Date().toISOString().split('T')[0];
             
+            // 初始化时间段
             initTimeSlots();
+            // 初始化时段状态
+            await updateTimeSlotStatus(fmt);
+            // 显示记录
             await displayRecords();
             
+            // 绑定事件
             document.getElementById('applicationForm').addEventListener('submit', submitApplication);
             document.getElementById('exportBtn').addEventListener('click', exportRecords);
             document.getElementById('clearFormBtn').addEventListener('click', clearForm);
             
-            document.getElementById('closeModalBtn').addEventListener('click', () => {
-                document.getElementById('conflictModal').style.display = 'none';
-                document.querySelectorAll('.time-slot.conflict').forEach(s => s.classList.remove('conflict'));
-            });
-            
-            document.getElementById('conflictModal').addEventListener('click', (e) => {
-                if (e.target === this) {
-                    document.getElementById('conflictModal').style.display = 'none';
-                    document.querySelectorAll('.time-slot.conflict').forEach(s => s.classList.remove('conflict'));
-                }
-            });
-
+            // 日期变更时更新时段状态
             document.getElementById('useDate').addEventListener('change', async function() {
                 const selectedDate = this.value;
-                const records = await loadRecords();
-                document.querySelectorAll('.time-slot.conflict').forEach(s => { s.classList.remove('conflict'); s.title = ''; });
-                const dateRecords = records.filter(r => r.date === selectedDate);
-                dateRecords.forEach(r => {
-                    r.timeSlots.forEach(hour => {
-                        const slot = document.querySelector(`.time-slot[data-hour="${hour}"]`);
-                        if (slot) { slot.classList.add('conflict'); slot.title = `已被 ${r.name} (${r.department}) 占用`; }
-                    });
-                });
+                await updateTimeSlotStatus(selectedDate);
+                // 清空已选时段
+                document.querySelectorAll('.time-slot.selected').forEach(s => s.classList.remove('selected'));
             });
         }
 
