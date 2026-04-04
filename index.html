@@ -11,14 +11,12 @@
             box-sizing: border-box;
             font-family: 'Microsoft YaHei', sans-serif;
         }
-
         body {
             background: linear-gradient(135deg, #f8f9fc 0%, #eef2f9 100%);
             color: #333;
             padding: 20px;
             min-height: 100vh;
         }
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -26,10 +24,8 @@
             border-radius: 18px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.07);
             padding: 40px;
-            overflow: hidden;
             position: relative;
         }
-
         .container::before {
             content: '';
             position: absolute;
@@ -39,32 +35,27 @@
             height: 6px;
             background: linear-gradient(90deg, #4381fb, #50c8e6, #62e0b7);
         }
-
         header {
             text-align: center;
             margin-bottom: 36px;
             padding-bottom: 20px;
             border-bottom: 1px solid #f0f4f8;
         }
-
         h1 {
             font-size: 28px;
             color: #1f2937;
             margin-bottom: 8px;
             font-weight: 600;
         }
-
         .subtitle {
             color: #6b7280;
             font-size: 15px;
         }
-
         .main-content {
             display: flex;
             flex-wrap: wrap;
             gap: 32px;
         }
-
         .form-section {
             flex: 1;
             min-width: 320px;
@@ -73,7 +64,6 @@
             padding: 28px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
         }
-
         .records-section {
             flex: 1.2;
             min-width: 320px;
@@ -81,14 +71,12 @@
             flex-direction: column;
             gap: 24px;
         }
-
         .record-panel {
             background: #fafbfc;
             border-radius: 14px;
             padding: 24px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
         }
-
         .section-title {
             font-size: 19px;
             color: #1f2937;
@@ -99,7 +87,6 @@
             align-items: center;
             gap: 10px;
         }
-
         .section-title::before {
             content: '';
             width: 5px;
@@ -107,15 +94,12 @@
             background: #4381fb;
             border-radius: 3px;
         }
-
         .expired-title::before {
             background: #9ca3af;
         }
-
         .form-group {
             margin-bottom: 22px;
         }
-
         label {
             display: block;
             margin-bottom: 8px;
@@ -123,34 +107,29 @@
             color: #374151;
             font-size: 14px;
         }
-
         input, select, textarea {
             width: 100%;
             padding: 13px 16px;
-            border: 1px solid #d15db;
+            border: 1px solid #d1d5db;
             border-radius: 8px;
             font-size: 15px;
             transition: all 0.25s ease;
         }
-
         input:focus, select:focus, textarea:focus {
             border-color: #4381fb;
-            box-shadow: 0 0 0 3px rgba(67, 129, 251, 0.1);
+            box-shadow: 0 0 0 3px rgba(67, 129, 255, 0.1);
             outline: none;
         }
-
         textarea {
             min-height: 110px;
             resize: vertical;
         }
-
         .time-slots {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
             gap: 8px;
             margin-top: 10px;
         }
-
         .time-slot {
             padding: 10px 6px;
             background: #f3f4f6;
@@ -162,18 +141,15 @@
             transition: all 0.2s;
             user-select: none;
         }
-
         .time-slot:hover:not(.conflict):not(.selected) {
             background: #e0e7ff;
             border-color: #c7d2fe;
         }
-
         .time-slot.selected {
             background: #4381fb;
             color: #fff;
             border-color: #3762d6;
         }
-
         .time-slot.conflict {
             background: #ef4444;
             color: #fff;
@@ -181,14 +157,12 @@
             pointer-events: none;
             opacity: 0.9;
         }
-
         .buttons {
             display: flex;
             gap: 12px;
             margin-top: 28px;
             flex-wrap: wrap;
         }
-
         button {
             flex: 1;
             min-width: 120px;
@@ -200,31 +174,25 @@
             cursor: pointer;
             transition: all 0.25s ease;
         }
-
         .submit-btn {
             background: #16a34a;
             color: #fff;
         }
-
         .submit-btn:hover {
             background: #15803d;
         }
-
         .clear-btn {
             background: #6b7280;
             color: #fff;
         }
-
         .clear-btn:hover {
             background: #4b5563;
         }
-
         .records-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 14px;
         }
-
         .records-table th {
             text-align: left;
             padding: 12px 10px;
@@ -232,30 +200,17 @@
             font-weight: 500;
             border-bottom: 1px solid #e5e7eb;
         }
-
         .records-table td {
             padding: 11px 10px;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid #f3f4f8;
         }
-
         .records-table tr:hover {
             background: #f9fafb;
         }
-
         .action-buttons {
             display: flex;
             gap: 6px;
         }
-
-        .edit-btn {
-            padding: 5px 9px;
-            background: #f59e0b;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
         .delete-btn {
             padding: 5px 9px;
             background: #ef4444;
@@ -264,14 +219,12 @@
             border-radius: 4px;
             cursor: pointer;
         }
-
         .empty {
             padding: 24px;
             text-align: center;
             color: #9ca3af;
             font-size: 14px;
         }
-
         .footer {
             margin-top: 36px;
             padding-top: 20px;
@@ -280,7 +233,6 @@
             font-size: 13px;
             border-top: 1px solid #f0f4f8;
         }
-
         .modal {
             position: fixed;
             top: 0;
@@ -296,12 +248,10 @@
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
-
         .modal.active {
             opacity: 1;
             pointer-events: auto;
         }
-
         .modal-content {
             background: #fff;
             border-radius: 12px;
@@ -311,21 +261,18 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             text-align: center;
         }
-
         .modal-title {
             font-size: 18px;
             color: #1f2937;
             margin-bottom: 15px;
             font-weight: 600;
         }
-
         .modal-text {
             font-size: 16px;
             color: #4b5563;
             line-height: 1.6;
             margin-bottom: 25px;
         }
-
         .modal-btn {
             padding: 12px 30px;
             background: #3b82f6;
@@ -338,24 +285,15 @@
             width: 100%;
             max-width: 200px;
         }
-
         .modal-btn:hover {
             background: #2563eb;
         }
-
         @media (max-width: 768px) {
-            .time-slots {
-                grid-template-columns: repeat(4, 1fr);
-            }
-            .buttons {
-                flex-direction: column;
-            }
+            .time-slots { grid-template-columns: repeat(4, 1fr); }
+            .buttons { flex-direction: column; }
         }
-
         @media (max-width: 480px) {
-            .time-slots {
-                grid-template-columns: repeat(3, 1fr);
-            }
+            .time-slots { grid-template-columns: repeat(3, 1fr); }
         }
     </style>
 </head>
@@ -462,19 +400,13 @@
 </div>
 
 <script>
-    // ========== 固定文件名（最终版）==========
+    // 固定文件名（与云端一致）
     const JSON_FILE = "请将此文件发给数媒部.json";
     const TXT_FILE = "请将此文件打印并签字.txt";
-
     const today = new Date().toISOString().split('T')[0];
     let opLog = { user:"", type:"", date:"", time:"", reason:"" };
 
-    // 获取当前时间
-    function now() {
-        return new Date().toLocaleString('zh-CN', { hour12: false });
-    }
-
-    // ========== 核心：读取云端JSON ==========
+    // 读取云端JSON（强制刷新缓存）
     async function load() {
         try {
             const res = await fetch(`./${JSON_FILE}?t=${Date.now()}`);
@@ -486,7 +418,7 @@
         }
     }
 
-    // ========== 核心：导出正确JSON ==========
+    // 保存JSON到云端
     function saveFile(data) {
         const jsonStr = JSON.stringify(data, null, 2);
         const blob = new Blob([jsonStr], { type: "application/json" });
@@ -497,19 +429,18 @@
         URL.revokeObjectURL(a.href);
     }
 
-    // ========== 导出TXT（极简分行）==========
+    // 导出TXT
     function exportTxt() {
         const txt = `录播室操作记录
 ——————————————
 操作人员：${opLog.user}
-操作时间：${now()}
+操作时间：${new Date().toLocaleString('zh-CN', { hour12: false })}
 操作类型：${opLog.type}
 使用日期：${opLog.date}
 使用时段：${opLog.time}
 申请用途：${opLog.reason}
 
 请领导审核签字`;
-
         const blob = new Blob([txt], { type: "text/plain;charset=utf-8" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
@@ -559,7 +490,7 @@
         });
     }
 
-    // 渲染列表
+    // 渲染列表（删除即将使用的编辑按钮）
     async function render() {
         const all = await load();
         const soon = all.filter(i => i.date >= today);
@@ -576,7 +507,7 @@
         document.getElementById("upcomingEmpty").style.display = soon.length ? "none" : "block";
         document.getElementById("expiredEmpty").style.display = old.length ? "none" : "block";
 
-        // 即将到来
+        // 即将使用：只保留删除按钮，去掉编辑
         soon.forEach((item, idx) => {
             const timeStr = item.timeSlots.map(h => `${String(h).padStart(2, '0')}:00`).join("、");
             uBody.innerHTML += `
@@ -585,13 +516,12 @@
                 <td>${timeStr}</td>
                 <td>${item.name}</td>
                 <td>
-                    <button class="edit-btn" data-idx="${idx}">编辑</button>
                     <button class="delete-btn" data-idx="${idx}">删除</button>
                 </td>
             </tr>`;
         });
 
-        // 已过期
+        // 过期记录：只保留删除
         old.forEach(item => {
             const timeStr = item.timeSlots.map(h => `${String(h).padStart(2, '0')}:00`).join("、");
             eBody.innerHTML += `
@@ -603,48 +533,11 @@
             </tr>`;
         });
 
-        bindEvents();
+        bindDeleteEvents();
     }
 
-    // 绑定编辑删除
-    function bindEvents() {
-        // 编辑
-        document.querySelectorAll(".edit-btn").forEach(btn => {
-            btn.onclick = async () => {
-                const idx = +btn.dataset.idx;
-                const all = await load();
-                const soon = all.filter(i => i.date >= today);
-                const item = soon[idx];
-
-                opLog = {
-                    user: item.name,
-                    type: "编辑申请",
-                    date: item.date,
-                    time: item.timeSlots.map(h => `${h}:00`).join("、"),
-                    reason: item.purpose
-                };
-
-                document.getElementById("applicantName").value = item.name;
-                document.getElementById("department").value = item.department;
-                document.getElementById("useDate").value = item.date;
-                document.getElementById("purpose").value = item.purpose;
-
-                await refresh(item.date);
-                document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
-                item.timeSlots.forEach(h => {
-                    const dom = document.querySelector(`.time-slot[data-hour="${h}"]`);
-                    if (dom && !dom.classList.contains("conflict")) dom.classList.add("selected");
-                });
-
-                // 删除旧数据
-                const newList = all.filter(i => i.id !== item.id);
-                exportAll(newList);
-                await render();
-                alert("已载入原申请信息，请修改后重新提交！");
-            };
-        });
-
-        // 删除
+    // 仅绑定删除事件（去掉编辑）
+    function bindDeleteEvents() {
         document.querySelectorAll(".delete-btn").forEach(btn => {
             btn.onclick = async () => {
                 if (!confirm("确定删除？")) return;
@@ -721,7 +614,7 @@
         alert("导出成功！\nJSON：发给数媒部\nTXT：打印签字");
     };
 
-    // 清空
+    // 清空表单
     document.getElementById("clearFormBtn").onclick = () => {
         document.getElementById("applicationForm").reset();
         document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
