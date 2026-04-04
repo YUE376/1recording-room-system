@@ -403,7 +403,13 @@
     </div>
     
     <script>
-        // 初始化时间槽位
+        // ==================== GitHub Gist API配置 ====================
+        const GITHUB_TOKEN = '你的GitHub个人访问令牌'; // 需要替换为你的GitHub Token
+        const GIST_ID = '你的Gist ID'; // 需要替换为你的Gist ID
+        const GIST_FILENAME = 'recording-room-data.json';
+        const GIST_API_URL = 'https://api.github.com/gists';
+        
+        // ==================== 初始化时间槽位 ====================
         function initTimeSlots() {
             const timeSlotsContainer = document.getElementById('timeSlots');
             timeSlotsContainer.innerHTML = '';
@@ -426,75 +432,131 @@
             }
         }
         
-        // 从本地存储加载申请记录
-        function loadRecords() {
-            const records = JSON.parse(localStorage.getItem('recordingRoomRecords')) || [];
-            return records;
-        }
-        
-        // 保存申请记录到本地存储
-        function saveRecords(records) {
-            localStorage.setItem('recordingRoomRecords', JSON.stringify(records));
-        }
-        
-        // 显示申请记录
-        function displayRecords() {
-            const records = loadRecords();
-            const recordsBody = document.getElementById('recordsBody');
-            recordsBody.innerHTML = '';
-            
-            if (records.length === 0) {
-                recordsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #7f8c8d;">暂无申请记录</td></tr>';
-                return;
+        // ==================== 从GitHub Gist加载申请记录 ====================
+        async function loadRecords() {
+            try {
+                const response = await fetch(`${GIST_API_URL}/${GIST_ID}`, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('无法从GitHub加载数据');
+                }
+                
+                const gistData = await response.json();
+                const content = gistData.files[GIST_FILENAME].content;
+                return JSON.parse(content);
+            } catch (error) {
+                console.error('加载记录失败:', error);
+                // 如果无法从GitHub加载，尝试从本地存储加载（作为备用）
+                const localRecords = JSON.parse(localStorage.getItem('recordingRoomRecords')) || [];
+                return localRecords;
             }
-            
-            // 按日期排序，最新的在前面
-            records.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            records.forEach((record, index) => {
-                const row = document.createElement('tr');
-                
-                // 格式化时间段显示
-                const timeSlots = record.timeSlots.map(hour => {
-                    const displayHour = hour.toString().padStart(2, '0');
-                    return `${displayHour}:00`;
-                }).join(', ');
-                
-                row.innerHTML = `
-                    <td>${record.date}</td>
-                    <td>${timeSlots}</td>
-                    <td>${record.name}</td>
-                    <td>${record.department}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="edit-btn" data-index="${index}">编辑</button>
-                            <button class="delete-btn" data-index="${index}">删除</button>
-                        </div>
-                    </td>
-                `;
-                
-                recordsBody.appendChild(row);
-            });
-            
-            // 添加编辑和删除事件监听
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const index = parseInt(this.dataset.index);
-                    editRecord(index);
-                });
-            });
-            
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const index = parseInt(this.dataset.index);
-                    deleteRecord(index);
-                });
-            });
         }
         
-        // 检查时间冲突
-        function checkTimeConflict(date, timeSlots) {
-            const records = loadRecords();
+        // ==================== 保存申请记录到GitHub Gist ====================
+        async function saveRecords(records) {
+            try {
+                const response = await fetch(`${GIST_API_URL}/${GIST_ID}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        files: {
+                            [GIST_FILENAME]: {
+                                content: JSON.stringify(records, null, 2)
+                            }
+                        }
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('保存到GitHub失败');
+                }
+                
+                // 同时保存到本地存储作为缓存
+                localStorage.setItem('recordingRoomRecords', JSON.stringify(records));
+                
+                return true;
+            } catch (error) {
+                console.error('保存记录失败:', error);
+                // 如果GitHub保存失败，保存到本地存储
+                localStorage.setItem('recordingRoomRecords', JSON.stringify(records));
+                alert('网络连接失败，数据已保存到本地。请检查网络后重试。');
+                return false;
+            }
+        }
+        
+        // ==================== 显示申请记录 ====================
+        async function displayRecords() {
+            try {
+                const records = await loadRecords();
+                const recordsBody = document.getElementById('recordsBody');
+                recordsBody.innerHTML = '';
+                
+                if (records.length === 0) {
+                    recordsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #7f8c8d;">暂无申请记录</td></tr>';
+                    return;
+                }
+                
+                // 按日期排序，最新的在前面
+                records.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                records.forEach((record, index) => {
+                    const row = document.createElement('tr');
+                    
+                    // 格式化时间段显示
+                    const timeSlots = record.timeSlots.map(hour => {
+                        const displayHour = hour.toString().padStart(2, '0');
+                        return `${displayHour}:00`;
+                    }).join(', ');
+                    
+                    row.innerHTML = `
+                        <td>${record.date}</td>
+                        <td>${timeSlots}</td>
+                        <td>${record.name}</td>
+                        <td>${record.department}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="edit-btn" data-index="${index}">编辑</button>
+                                <button class="delete-btn" data-index="${index}">删除</button>
+                            </div>
+                        </td>
+                    `;
+                    
+                    recordsBody.appendChild(row);
+                });
+                
+                // 添加编辑和删除事件监听
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.dataset.index);
+                        editRecord(index);
+                    });
+                });
+                
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.dataset.index);
+                        deleteRecord(index);
+                    });
+                });
+            } catch (error) {
+                console.error('显示记录失败:', error);
+                const recordsBody = document.getElementById('recordsBody');
+                recordsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #e74c3c;">加载数据失败，请检查网络连接</td></tr>';
+            }
+        }
+        
+        // ==================== 检查时间冲突 ====================
+        async function checkTimeConflict(date, timeSlots) {
+            const records = await loadRecords();
             
             for (const record of records) {
                 if (record.date === date) {
@@ -509,326 +571,251 @@
                     }
                 }
             }
-            
             return { conflict: false };
         }
         
-        // 显示冲突提示
-        function showConflictMessage(conflictingRecord, date, timeSlots) {
-            const conflictMessage = document.getElementById('conflictMessage');
-            const conflictModal = document.getElementById('conflictModal');
-            
-            const conflictTimes = timeSlots.filter(slot => 
-                conflictingRecord.timeSlots.includes(slot)
-            ).map(hour => {
-                const displayHour = hour.toString().padStart(2, '0');
-                return `${displayHour}:00-${displayHour}:59`;
-            }).join(', ');
-            
-            conflictMessage.textContent = 
-                `您选择的时间段与已有申请冲突！\n\n冲突时间：${date} ${conflictTimes}\n冲突申请人：${conflictingRecord.name}\n所属部门：${conflictingRecord.department}\n\n请选择其他时间段。`;
-            
-            conflictModal.style.display = 'flex';
-            
-            // 高亮显示冲突的时间段
-            const allTimeSlots = document.querySelectorAll('.time-slot');
-            allTimeSlots.forEach(slot => {
-                const hour = parseInt(slot.dataset.hour);
-                if (conflictingRecord.timeSlots.includes(hour)) {
-                    slot.classList.add('conflict');
-                }
-            });
-        }
-        
-        // 提交申请
-        function submitApplication(event) {
+        // ==================== 提交申请 ====================
+        async function submitApplication(event) {
             event.preventDefault();
             
-            const name = document.getElementById('applicantName').value.trim();
-            const department = document.getElementById('department').value;
-            const date = document.getElementById('useDate').value;
-            const purpose = document.getElementById('purpose').value.trim();
+            const form = event.target;
+            const name = form.applicantName.value;
+            const department = form.department.value;
+            const date = form.useDate.value;
+            const timeSlots = Array.from(document.querySelectorAll('.time-slot.selected')).map(slot => parseInt(slot.dataset.hour));
+            const purpose = form.purpose.value;
             
-            // 获取选中的时间段
-            const selectedTimeSlots = Array.from(document.querySelectorAll('.time-slot.selected'))
-                .map(slot => parseInt(slot.dataset.hour));
-            
-            // 验证表单
-            if (!name || !department || !date || !purpose || selectedTimeSlots.length === 0) {
-                alert('请填写所有必填项并选择至少一个时间段！');
+            // 表单验证
+            if (!name || !department || !date || timeSlots.length === 0 || !purpose) {
+                alert('请填写所有必填信息并选择至少一个时间段');
                 return;
             }
             
             // 检查时间冲突
-            const conflictCheck = checkTimeConflict(date, selectedTimeSlots);
-            if (conflictCheck.conflict) {
-                showConflictMessage(conflictCheck.conflictingRecord, date, selectedTimeSlots);
+            const conflictResult = await checkTimeConflict(date, timeSlots);
+            if (conflictResult.conflict) {
+                const modalMessage = document.getElementById('conflictMessage');
+                modalMessage.textContent = `所选时间段与${conflictResult.conflictingRecord.name}的申请冲突，对方申请时间为${conflictResult.conflictingRecord.timeSlots.map(hour => `${hour.toString().padStart(2, '0')}:00`).join(', ')}，请重新选择时间段。`;
+                document.getElementById('conflictModal').style.display = 'block';
                 return;
             }
             
-            // 创建申请记录
+            // 创建新的申请记录
             const newRecord = {
                 id: Date.now(),
                 name,
                 department,
                 date,
-                timeSlots: selectedTimeSlots,
+                timeSlots,
                 purpose,
                 submitTime: new Date().toLocaleString('zh-CN')
             };
             
-            // 保存记录
-            const records = loadRecords();
+            // 加载现有记录并添加新记录
+            let records = await loadRecords();
             records.push(newRecord);
-            saveRecords(records);
             
-            // 更新显示
-            displayRecords();
-            
-            // 重置表单
-            document.getElementById('applicationForm').reset();
-            
-            // 清除所有选中的时间段
-            document.querySelectorAll('.time-slot.selected').forEach(slot => {
-                slot.classList.remove('selected');
-            });
-            
-            // 清除冲突标记
-            document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-                slot.classList.remove('conflict');
-            });
-            
-            alert('申请提交成功！');
-        }
-        
-        // 编辑申请记录
-        function editRecord(index) {
-            const records = loadRecords();
-            const record = records[index];
-            
-            // 填充表单
-            document.getElementById('applicantName').value = record.name;
-            document.getElementById('department').value = record.department;
-            document.getElementById('useDate').value = record.date;
-            document.getElementById('purpose').value = record.purpose;
-            
-            // 清除之前的选择
-            document.querySelectorAll('.time-slot.selected').forEach(slot => {
-                slot.classList.remove('selected');
-            });
-            
-            // 选择对应的时间段
-            record.timeSlots.forEach(hour => {
-                const slot = document.querySelector(`.time-slot[data-hour="${hour}"]`);
-                if (slot) {
-                    slot.classList.add('selected');
-                }
-            });
-            
-            // 删除原记录
-            records.splice(index, 1);
-            saveRecords(records);
-            displayRecords();
-            
-            // 滚动到表单区域
-            document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
-            
-            alert('已加载申请记录到表单，请修改后重新提交。');
-        }
-        
-        // 删除申请记录
-        function deleteRecord(index) {
-            if (confirm('确定要删除这条申请记录吗？')) {
-                const records = loadRecords();
-                records.splice(index, 1);
-                saveRecords(records);
-                displayRecords();
-                alert('申请记录已删除。');
-            }
-        }
-        
-        // 导出申请记录
-        function exportRecords() {
-            const records = loadRecords();
-            
-            if (records.length === 0) {
-                alert('暂无申请记录可导出。');
-                return;
-            }
-            
-            // 创建导出内容
-            let exportContent = '录播室申请记录\n';
-            exportContent += '导出时间：' + new Date().toLocaleString('zh-CN') + '\n';
-            exportContent += '='.repeat(50) + '\n\n';
-            
-            records.forEach((record, index) => {
-                exportContent += `记录 ${index + 1}:\n`;
-                exportContent += `申请日期：${record.submitTime}\n`;
-                exportContent += `使用日期：${record.date}\n`;
-                exportContent += `使用时间段：${record.timeSlots.map(hour => {
-                    const displayHour = hour.toString().padStart(2, '0');
-                    return `${displayHour}:00-${displayHour}:59`;
-                }).join(', ')}\n`;
-                exportContent += `申请人：${record.name}\n`;
-                exportContent += `部门：${record.department}\n`;
-                exportContent += `申请事由：${record.purpose}\n`;
-                exportContent += '-'.repeat(40) + '\n\n';
-            });
-            
-            // 创建Blob对象并下载
-            const blob = new Blob([exportContent], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `录播室申请记录_${new Date().toISOString().slice(0, 10)}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            alert('申请记录已导出为TXT文件。');
-        }
-        
-        // 一键复制到剪贴板
-        function copyToClipboard() {
-            const records = loadRecords();
-            
-            if (records.length === 0) {
-                alert('暂无申请记录可复制。');
-                return;
-            }
-            
-            // 创建复制内容
-            let copyContent = '录播室申请记录\n';
-            copyContent += '复制时间：' + new Date().toLocaleString('zh-CN') + '\n';
-            copyContent += '='.repeat(50) + '\n\n';
-            
-            records.forEach((record, index) => {
-                copyContent += `记录 ${index + 1}:\n`;
-                copyContent += `申请日期：${record.submitTime}\n`;
-                copyContent += `使用日期：${record.date}\n`;
-                copyContent += `使用时间段：${record.timeSlots.map(hour => {
-                    const displayHour = hour.toString().padStart(2, '0');
-                    return `${displayHour}:00-${displayHour}:59`;
-                }).join(', ')}\n`;
-                copyContent += `申请人：${record.name}\n`;
-                copyContent += `部门：${record.department}\n`;
-                copyContent += `申请事由：${record.purpose}\n`;
-                copyContent += '-'.repeat(40) + '\n\n';
-            });
-            
-            // 使用Clipboard API复制到剪贴板
-            navigator.clipboard.writeText(copyContent).then(() => {
-                alert('申请记录已复制到剪贴板，可以粘贴到TXT文件中。');
-            }).catch(err => {
-                // 如果Clipboard API不可用，使用备用方法
-                const textArea = document.createElement('textarea');
-                textArea.value = copyContent;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                alert('申请记录已复制到剪贴板，可以粘贴到TXT文件中。');
-            });
-        }
-        
-        // 清空表单
-        function clearForm() {
-            if (confirm('确定要清空表单内容吗？')) {
-                document.getElementById('applicationForm').reset();
+            // 保存记录
+            const saveSuccess = await saveRecords(records);
+            if (saveSuccess) {
+                // 重置表单并刷新记录
+                form.reset();
                 document.querySelectorAll('.time-slot.selected').forEach(slot => {
                     slot.classList.remove('selected');
                 });
-                document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-                    slot.classList.remove('conflict');
-                });
+                displayRecords();
+                alert('申请提交成功！');
             }
         }
         
-        // 初始化页面
-        function initPage() {
-            // 设置默认日期为明天
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const formattedDate = tomorrow.toISOString().split('T')[0];
-            document.getElementById('useDate').value = formattedDate;
-            document.getElementById('useDate').min = formattedDate;
+        // ==================== 编辑申请记录 ====================
+        function editRecord(index) {
+            const records = JSON.parse(localStorage.getItem('recordingRoomRecords'));
+            const record = records[index];
             
-            // 初始化时间槽位
-            initTimeSlots();
+            // 弹出编辑表单
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h3>编辑申请记录</h3>
+                    <form id="editForm">
+                        <div class="form-group">
+                            <label>申请人姓名</label>
+                            <input type="text" id="editName" value="${record.name}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>选择部门</label>
+                            <select id="editDepartment" required>
+                                <option value="">请选择部门</option>
+                                <option value="党政办公室" ${record.department === '党政办公室' ? 'selected' : ''}>党政办公室</option>
+                                <option value="总编室" ${record.department === '总编室' ? 'selected' : ''}>总编室</option>
+                                <option value="校对质检部" ${record.department === '校对质检部' ? 'selected' : ''}>校对质检部</option>
+                                <option value="财务部" ${record.department === '财务部' ? 'selected' : ''}>财务部</option>
+                                <option value="出版部" ${record.department === '出版部' ? 'selected' : ''}>出版部</option>
+                                <option value="发行部" ${record.department === '发行部' ? 'selected' : ''}>发行部</option>
+                                <option value="数媒出版事业部" ${record.department === '数媒出版事业部' ? 'selected' : ''}>数媒出版事业部</option>
+                                <option value="政治理论编辑室" ${record.department === '政治理论编辑室' ? 'selected' : ''}>政治理论编辑室</option>
+                                <option value="经济管理编辑室" ${record.department === '经济管理编辑室' ? 'selected' : ''}>经济管理编辑室</option>
+                                <option value="社会建设编辑室" ${record.department === '社会建设编辑室' ? 'selected' : ''}>社会建设编辑室</option>
+                                <option value="历史文化编辑室" ${record.department === '历史文化编辑室' ? 'selected' : ''}>历史文化编辑室</option>
+                                <option value="译文编辑室" ${record.department === '译文编辑室' ? 'selected' : ''}>译文编辑室</option>
+                                <option value="教育图书编辑室" ${record.department === '教育图书编辑室' ? 'selected' : ''}>教育图书编辑室</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>使用日期</label>
+                            <input type="date" id="editDate" value="${record.date}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>选择使用时间段</label>
+                            <div class="time-slots" id="editTimeSlots">
+                                <!-- 动态生成时间槽位 -->
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>申请事由</label>
+                            <textarea id="editPurpose" required>${record.purpose}</textarea>
+                        </div>
+                        <div class="buttons">
+                            <button type="submit">保存修改</button>
+                            <button type="button" onclick="this.parentElement.parentElement.parentElement.style.display = 'none'">取消</button>
+                        </div>
+                    </form>
+                </div>
+            `;
             
-            // 显示已有记录
-            displayRecords();
+            document.body.appendChild(modal);
             
-            // 表单提交事件
-            document.getElementById('applicationForm').addEventListener('submit', submitApplication);
-            
-            // 导出按钮事件
-            document.getElementById('exportBtn').addEventListener('click', exportRecords);
-            
-            // 清空表单按钮事件
-            document.getElementById('clearFormBtn').addEventListener('click', clearForm);
-            
-            // 关闭模态框按钮事件
-            document.getElementById('closeModalBtn').addEventListener('click', function() {
-                document.getElementById('conflictModal').style.display = 'none';
-                // 清除冲突标记
-                document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-                    slot.classList.remove('conflict');
-                });
-            });
-            
-            // 点击模态框外部关闭
-            document.getElementById('conflictModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.style.display = 'none';
-                    // 清除冲突标记
-                    document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-                        slot.classList.remove('conflict');
-                    });
+            // 初始化编辑表单的时间槽位
+            const editTimeSlotsContainer = document.getElementById('editTimeSlots');
+            editTimeSlotsContainer.innerHTML = '';
+            for (let hour = 0; hour < 24; hour++) {
+                const timeSlot = document.createElement('div');
+                timeSlot.className = 'time-slot';
+                timeSlot.dataset.hour = hour;
+                const displayHour = hour.toString().padStart(2, '0');
+                timeSlot.textContent = `${displayHour}:00-${displayHour}:59`;
+                
+                // 选中已有的时间槽位
+                if (record.timeSlots.includes(hour)) {
+                    timeSlot.classList.add('selected');
                 }
-            });
-            
-            // 添加一键复制按钮
-            const copyBtn = document.createElement('button');
-            copyBtn.textContent = '一键复制到TXT';
-            copyBtn.className = 'export-btn';
-            copyBtn.style.marginTop = '10px';
-            copyBtn.addEventListener('click', copyToClipboard);
-            document.querySelector('.records-section').appendChild(copyBtn);
-            
-            // 添加日期限制：只能选择今天及以后的日期
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('useDate').min = today;
-            
-            // 当日期改变时，检查时间冲突并高亮显示
-            document.getElementById('useDate').addEventListener('change', function() {
-                const selectedDate = this.value;
-                const records = loadRecords();
                 
-                // 清除所有冲突标记
-                document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-                    slot.classList.remove('conflict');
+                timeSlot.addEventListener('click', function() {
+                    this.classList.toggle('selected');
                 });
                 
-                // 查找该日期已有的申请
-                const dateRecords = records.filter(record => record.date === selectedDate);
+                editTimeSlotsContainer.appendChild(timeSlot);
+            }
+            
+            // 处理编辑表单提交
+            document.getElementById('editForm').addEventListener('submit', function(e) {
+                e.preventDefault();
                 
-                // 高亮显示已被占用的时间段
-                dateRecords.forEach(record => {
-                    record.timeSlots.forEach(hour => {
-                        const slot = document.querySelector(`.time-slot[data-hour="${hour}"]`);
-                        if (slot) {
-                            slot.classList.add('conflict');
-                            slot.title = `已被 ${record.name} (${record.department}) 占用`;
-                        }
-                    });
-                });
+                const editName = document.getElementById('editName').value;
+                const editDepartment = document.getElementById('editDepartment').value;
+                const editDate = document.getElementById('editDate').value;
+                const editTimeSlots = Array.from(document.querySelectorAll('#editTimeSlots .time-slot.selected')).map(slot => parseInt(slot.dataset.hour));
+                const editPurpose = document.getElementById('editPurpose').value;
+                
+                // 更新记录
+                records[index] = {
+                    id: record.id,
+                    name: editName,
+                    department: editDepartment,
+                    date: editDate,
+                    timeSlots: editTimeSlots,
+                    purpose: editPurpose,
+                    submitTime: new Date().toLocaleString('zh-CN')
+                };
+                
+                // 保存记录
+                saveRecords(records);
+                // 关闭模态框并刷新记录
+                modal.style.display = 'none';
+                displayRecords();
+                alert('记录修改成功！');
             });
         }
         
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', initPage);
+        // ==================== 删除申请记录 ====================
+        function deleteRecord(index) {
+            if (confirm('确定要删除这条申请记录吗？')) {
+                let records = JSON.parse(localStorage.getItem('recordingRoomRecords'));
+                records.splice(index, 1);
+                saveRecords(records);
+                displayRecords();
+                alert('记录删除成功！');
+            }
+        }
+        
+        // ==================== 导出申请记录 ====================
+        function exportRecords() {
+            const records = JSON.parse(localStorage.getItem('recordingRoomRecords'));
+            if (records.length === 0) {
+                alert('暂无申请记录可导出');
+                return;
+            }
+            
+            // 将记录转换为CSV格式
+            const csvContent = [
+                ['日期', '时间段', '申请人', '部门', '申请事由', '提交时间'],
+                ...records.map(record => [
+                    record.date,
+                    record.timeSlots.map(hour => `${hour.toString().padStart(2, '0')}:00`).join(', '),
+                    record.name,
+                    record.department,
+                    record.purpose,
+                    record.submitTime
+                ])
+            ].map(row => row.join(',')).join('\n');
+            
+            // 创建下载链接
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `录播室申请记录-${new Date().toLocaleDateString('zh-CN')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+        
+        // ==================== 清空表单 ====================
+        function clearForm() {
+            document.getElementById('applicationForm').reset();
+            document.querySelectorAll('.time-slot.selected').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+        }
+        
+        // ====================
+
+        // ==================== 初始化页面 ====================
+        function initPage() {
+            // 初始化时间槽位
+            initTimeSlots();
+            // 加载并显示申请记录
+            displayRecords();
+            // 绑定表单提交事件
+            document.getElementById('applicationForm').addEventListener('submit', submitApplication);
+            // 绑定导出按钮事件
+            document.getElementById('exportBtn').addEventListener('click', exportRecords);
+            // 绑定清空表单按钮事件
+            document.getElementById('clearFormBtn').addEventListener('click', clearForm);
+            // 绑定冲突模态框关闭事件
+            document.getElementById('closeModalBtn').addEventListener('click', function() {
+                document.getElementById('conflictModal').style.display = 'none';
+            });
+        }
+        
+        // 页面加载时初始化
+        window.addEventListener('load', initPage);
     </script>
 </body>
 </html>
+
+                    
