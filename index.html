@@ -33,7 +33,7 @@
             left: 0;
             width: 100%;
             height: 6px;
-            background: linear-gradient(90deg, #4381fb, #50c8e6, #62e0b7);
+            background: linear-gradient(90deg, #4382fb, #50c8e6, #62e0b7);
         }
         header {
             text-align: center;
@@ -91,7 +91,7 @@
             content: '';
             width: 5px;
             height: 18px;
-            background: #4381fb;
+            background: #4382fb;
             border-radius: 3px;
         }
         .expired-title::before {
@@ -116,7 +116,7 @@
             transition: all 0.25s ease;
         }
         input:focus, select:focus, textarea:focus {
-            border-color: #4381fb;
+            border-color: #4382fb;
             box-shadow: 0 0 0 3px rgba(67, 129, 255, 0.1);
             outline: none;
         }
@@ -146,7 +146,7 @@
             border-color: #c7d2fe;
         }
         .time-slot.selected {
-            background: #4381fb;
+            background: #4382fb;
             color: #fff;
             border-color: #3762d6;
         }
@@ -179,19 +179,20 @@
             color: #fff;
         }
         .submit-btn:hover {
-            background: #15803d;
+            background: #15803d6;
         }
         .clear-btn {
             background: #6b7280;
             color: #fff;
         }
         .clear-btn:hover {
-            background: #4b5563;
+            background: #4b5566;
         }
         .sync-btn {
             background: #3b82f6;
             color: #fff;
             width: 100%;
+            margin-top: 10px;
         }
         .sync-btn:hover {
             background: #2563eb;
@@ -204,7 +205,7 @@
         .records-table th {
             text-align: left;
             padding: 12px 10px;
-            color: #4b5563;
+            color: #4b5566;
             font-weight: 500;
             border-bottom: 1px solid #e5e7eb;
         }
@@ -214,10 +215,6 @@
         }
         .records-table tr:hover {
             background: #f9fafb;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 6px;
         }
         .delete-btn {
             padding: 5px 9px;
@@ -277,7 +274,7 @@
         }
         .modal-text {
             font-size: 16px;
-            color: #4b5563;
+            color: #4b5566;
             line-height: 1.6;
             margin-bottom: 25px;
         }
@@ -356,9 +353,7 @@
                     <button type="submit" class="submit-btn">提交申请表</button>
                     <button type="button" class="clear-btn" id="clearFormBtn">清空表单</button>
                 </div>
-                <div style="margin-top:12px;">
-                    <button type="button" class="sync-btn" id="syncCloudBtn">同步云端数据</button>
-                </div>
+                <button type="button" class="sync-btn" id="syncCloudBtn">同步云端数据</button>
             </form>
         </div>
 
@@ -397,67 +392,72 @@
         </div>
     </div>
 
-    <div class="footer">
-        录播室申请管理系统 &copy; 2026 · 云端同步版
-    </div>
+    <div class="footer">录播室申请管理系统 &copy; 2026</div>
 </div>
 
 <div class="modal" id="tipsModal">
     <div class="modal-content">
-        <h3 class="modal-title">请将此文件打印并签字</h3>
-        <p class="modal-text">已生成《录播室申请表》</p>
-        <button class="modal-btn" id="confirmBtn">已知晓</button>
+        <h3 class="modal-title">纸质申请表提交数媒部后，方算预约成功</h3>
+        <button class="modal-btn" id="confirmBtn">我已知晓</button>
     </div>
 </div>
 
 <script>
     // 文件名配置
-    const TXT_FILE = "录播室申请表.txt";
-    const JSON_FILE = "数媒部确认申请表.json";
+    const TXT_NAME = "录播室申请表.txt";
+    const JSON_NAME = "数媒部确认申请表.json";
 
     const today = new Date().toISOString().split('T')[0];
-    let opData = {};
 
-    // 本地存储操作
-    function getLocalRecords() {
+    // 本地存储
+    function getRecords() {
         const data = localStorage.getItem("records");
         return data ? JSON.parse(data) : [];
     }
-    function setLocalRecords(list) {
+    function saveRecords(list) {
         localStorage.setItem("records", JSON.stringify(list));
     }
 
-    // 下载文件通用方法
-    function downloadFile(content, fileName, type) {
+    // 文件下载
+    function download(content, name, type) {
         const blob = new Blob([content], { type });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = fileName;
+        a.download = name;
         a.click();
         URL.revokeObjectURL(url);
     }
 
-    // 生成并下载TXT
-    function exportTxt() {
-        const txt = `录播室申请表
-——————————————
-申请人：${opData.name}
-部门：${opData.dept}
-使用日期：${opData.date}
-使用时段：${opData.time}
-申请用途：${opData.purpose}
-操作时间：${new Date().toLocaleString('zh-CN', { hour12: false })}
+    // 导出汇总 TXT
+    function exportSummaryTxt() {
+        const records = getRecords();
+        let content = "录播室申请表（汇总）\n";
+        content += "——————————————————\n";
 
-请领导审核签字`;
-        downloadFile(txt, TXT_FILE, "text/plain;charset=utf-8");
+        if (records.length === 0) {
+            content += "暂无预约记录\n";
+        } else {
+            records.forEach((item, index) => {
+                const timeStr = item.timeSlots.map(h => `${String(h).padStart(2, '0')}:00`).join("、");
+                content += `【${index + 1}】\n`;
+                content += `申请人：${item.name}\n`;
+                content += `部门：${item.department}\n`;
+                content += `日期：${item.date}\n`;
+                content += `时段：${timeStr}\n`;
+                content += `用途：${item.purpose}\n\n`;
+            });
+        }
+
+        content += "提交数媒部后生效\n";
+        download(content, TXT_NAME, "text/plain;charset=utf-8");
     }
 
-    // 同步云端：导出完整JSON
+    // 同步云端导出完整JSON
     function syncCloud() {
-        const all = getLocalRecords();
-        downloadFile(JSON.stringify(all, null, 2), JSON_FILE, "application/json");
-        alert("同步成功！已生成：数媒部确认申请表.json");
+        const data = JSON.stringify(getRecords(), null, 2);
+        download(data, JSON_NAME, "application/json");
+        alert("同步成功：数媒部确认申请表.json");
     }
 
     // 初始化时间段
@@ -477,9 +477,9 @@
         }
     }
 
-    // 刷新占用时段
-    function refreshOccupied(date) {
-        const list = getLocalRecords();
+    // 刷新占用
+    function refresh(date) {
+        const list = getRecords();
         document.querySelectorAll(".time-slot").forEach(s => {
             s.classList.remove("conflict");
             s.title = "";
@@ -489,7 +489,7 @@
                 const dom = document.querySelector(`.time-slot[data-hour="${h}"]`);
                 if (dom) {
                     dom.classList.add("conflict");
-                    dom.title = `已被 ${item.name} 占用`;
+                    dom.title = `已占用`;
                 }
             });
         });
@@ -497,7 +497,7 @@
 
     // 渲染列表
     function render() {
-        const all = getLocalRecords();
+        const all = getRecords();
         const soon = all.filter(i => i.date >= today);
         const old = all.filter(i => i.date < today);
 
@@ -512,7 +512,6 @@
         document.getElementById("upcomingEmpty").style.display = soon.length ? "none" : "block";
         document.getElementById("expiredEmpty").style.display = old.length ? "none" : "block";
 
-        // 即将使用：只显示删除
         soon.forEach((item, idx) => {
             const timeStr = item.timeSlots.map(h => `${String(h).padStart(2, '0')}:00`).join("、");
             uBody.innerHTML += `
@@ -524,7 +523,6 @@
             </tr>`;
         });
 
-        // 过期记录
         old.forEach(item => {
             const timeStr = item.timeSlots.map(h => `${String(h).padStart(2, '0')}:00`).join("、");
             eBody.innerHTML += `
@@ -539,40 +537,29 @@
         bindDelete();
     }
 
-    // 删除事件
+    // 删除逻辑：点击直接删，不生成文件
     function bindDelete() {
         document.querySelectorAll(".delete-btn").forEach(btn => {
             btn.onclick = () => {
                 if (!confirm("确定删除？")) return;
-                const all = getLocalRecords();
-                let target;
+                const all = getRecords();
+                let targetId;
 
-                if (btn.dataset.id) {
-                    target = all.find(i => i.id === btn.dataset.id);
-                } else {
+                if (btn.dataset.id) targetId = btn.dataset.id;
+                else {
                     const soon = all.filter(i => i.date >= today);
-                    target = soon[+btn.dataset.idx];
+                    targetId = soon[+btn.dataset.idx].id;
                 }
 
-                opData = {
-                    name: target.name,
-                    dept: target.department,
-                    date: target.date,
-                    time: target.timeSlots.map(h => `${h}:00`).join("、"),
-                    purpose: "已删除本条申请"
-                };
-
-                const newList = all.filter(i => i.id !== target.id);
-                setLocalRecords(newList);
-                exportTxt();
-                document.getElementById("tipsModal").classList.add("active");
+                const newList = all.filter(i => i.id !== targetId);
+                saveRecords(newList);
                 render();
-                refreshOccupied(document.getElementById("useDate").value);
+                refresh(document.getElementById("useDate").value);
             };
         });
     }
 
-    // 提交表单
+    // 提交表单：生成汇总 TXT + 弹窗
     document.getElementById("applicationForm").addEventListener("submit", e => {
         e.preventDefault();
         const name = document.getElementById("applicantName").value.trim();
@@ -586,21 +573,24 @@
             return;
         }
 
-        opData = { name, dept, date, time: slots.map(h => `${h}:00`).join("、"), purpose };
+        const list = getRecords();
+        list.push({
+            id: Date.now().toString(),
+            name, department: dept, date, timeSlots: slots, purpose
+        });
+        saveRecords(list);
 
-        const list = getLocalRecords();
-        list.push({ id: Date.now().toString(), name, department: dept, date, timeSlots: slots, purpose });
-        setLocalRecords(list);
+        // 导出汇总表
+        exportSummaryTxt();
 
-        exportTxt();
         e.target.reset();
         document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
         document.getElementById("tipsModal").classList.add("active");
         render();
-        refreshOccupied(date);
+        refresh(date);
     });
 
-    // 弹窗确认
+    // 弹窗关闭
     document.getElementById("confirmBtn").onclick = () => {
         document.getElementById("tipsModal").classList.remove("active");
     };
@@ -611,7 +601,7 @@
         document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
     };
 
-    // 同步云端按钮
+    // 同步云端
     document.getElementById("syncCloudBtn").onclick = syncCloud;
 
     // 初始化
@@ -621,11 +611,11 @@
         document.getElementById("useDate").value = tomorrow.toISOString().split('T')[0];
         document.getElementById("useDate").min = today;
         initSlots();
-        refreshOccupied(document.getElementById("useDate").value);
+        refresh(document.getElementById("useDate").value);
         render();
 
         document.getElementById("useDate").addEventListener("change", () => {
-            refreshOccupied(document.getElementById("useDate").value);
+            refresh(document.getElementById("useDate").value);
             document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
         });
     }
