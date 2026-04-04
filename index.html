@@ -71,7 +71,7 @@
             background: #fafbfc;
             border-radius: 14px;
             padding: 28px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            box-shadow: 2px 10px 10px rgba(0, 0, 0, 0.04);
         }
 
         .records-section {
@@ -86,7 +86,7 @@
             background: #fafbfc;
             border-radius: 14px;
             padding: 24px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            box-shadow: 2px 10px 10px rgba0,0,0,0.04;
         }
 
         .section-title {
@@ -462,273 +462,252 @@
 </div>
 
 <script>
-    const DATA_FILE = "recording-room-records.json";
-    const todayStr = new Date().toISOString().split('T')[0];
-    let lastOperation = "";
-    let lastOperatorName = "";
+    // 固定文件名
+    const JSON_FILE_NAME = "请将此文件发给数媒部.json";
+    const TXT_FILE_NAME = "请将此文件打印并签字.txt";
 
-    function formatDateTime(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hour = String(date.getHours()).padStart(2, '0');
-        const minute = String(date.getMinutes()).padStart(2, '0');
-        const second = String(date.getSeconds()).padStart(2, '0');
-        return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+    const todayStr = new Date().toISOString().split('T')[0];
+    let lastOperateText = "";
+    let currentUserName = "";
+
+    // 标准时间格式
+    function getNowTime() {
+        return new Date().toLocaleString('zh-CN',{hour12:false});
     }
 
+    // 读取云端记录
     async function loadRecords() {
-        try {
-            const res = await fetch(`./${DATA_FILE}?t=${Date.now()}`);
-            if (!res.ok) return [];
+        try{
+            let res = await fetch(`./${JSON_FILE_NAME}?t=${Date.now()}`);
+            if(!res.ok) return [];
             return await res.json() || [];
-        } catch (e) {
+        }catch(e){
             return [];
         }
     }
 
-    function saveRecords(records) {
-        localStorage.setItem("recordingRoomRecords", JSON.stringify(records));
+    // 本地缓存
+    function saveLocal(records){
+        localStorage.setItem("cacheRecords",JSON.stringify(records));
     }
 
-    function exportFile(content, filename, type) {
-        const blob = new Blob([content], { type: type });
-        const a = document.createElement("a");
+    // 导出文件
+    function downFile(content,name,type){
+        let blob = new Blob([content],{type:type});
+        let a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        a.download = filename;
+        a.download = name;
         a.click();
         URL.revokeObjectURL(a.href);
     }
 
-    function exportDualFiles(operationDesc) {
-        const records = JSON.parse(localStorage.getItem("recordingRoomRecords")) || [];
-        exportFile(JSON.stringify(records, null, 2), DATA_FILE, "application/json");
+    // 导出双文件
+    function exportTwoFile(){
+        let cache = localStorage.getItem("cacheRecords") || "[]";
+        // 1.导出JSON
+        downFile(cache,JSON_FILE_NAME,"application/json");
 
-        const now = new Date();
-        const timeStr = formatDateTime(now);
-        const userName = lastOperatorName || "未知用户";
-        const txtFilename = `${userName}.${timeStr}.txt`;
-        
-        const txtContent = 
-`录播室使用申请
-——————————————
-申请人：${userName}
-申请时间：${timeStr}
-${operationDesc}
+        // 2.导出审批TXT（详细+简明，领导能看懂）
+        let txt = `录播室申请修改记录
+——————————————————
+操作人：${currentUserName}
+操作时间：${getNowTime()}
+操作内容：${lastOperateText}
 
-请领导审阅。`;
-        
-        exportFile(txtContent, txtFilename, "text/plain;charset=utf-8");
+请领导审核签字。`;
+        downFile(txt,TXT_FILE_NAME,"text/plain;charset=utf-8");
     }
 
-    function initTimeSlots() {
-        const box = document.getElementById("timeSlots");
+    // 初始化时间段
+    function initTime(){
+        let box = document.getElementById("timeSlots");
         box.innerHTML = "";
-        for (let h = 0; h < 24; h++) {
-            const slot = document.createElement("div");
-            slot.className = "time-slot";
-            slot.dataset.hour = h;
-            const hh = String(h).padStart(2, '0');
-            slot.innerText = `${hh}:00-${hh}:59`;
-            slot.onclick = () => {
-                if (!slot.classList.contains("conflict")) slot.classList.toggle("selected");
-            };
-            box.appendChild(slot);
+        for(let h=0;h<24;h++){
+            let d = document.createElement("div");
+            d.className="time-slot";
+            d.dataset.hour = h;
+            let s = String(h).padStart(2,"0");
+            d.innerText = `${s}:00-${s}:59`;
+            d.onclick=()=>{
+                if(!d.classList.contains("conflict"))d.classList.toggle("selected");
+            }
+            box.appendChild(d);
         }
     }
 
-    async function refreshOccupiedSlots(date) {
-        const records = await loadRecords();
-        document.querySelectorAll(".time-slot").forEach(s => {
-            s.classList.remove("conflict");
-            s.title = "";
+    // 刷新占用时间
+    async function refreshDate(date){
+        let list = await loadRecords();
+        document.querySelectorAll(".time-slot").forEach(x=>{
+            x.classList.remove("conflict");x.title="";
         });
-        records.filter(r => r.date === date).forEach(r => {
-            r.timeSlots.forEach(h => {
-                const slot = document.querySelector(`.time-slot[data-hour="${h}"]`);
-                if (slot) {
-                    slot.classList.add("conflict");
-                    slot.title = `已被 ${r.name}（${r.department}）占用`;
-                }
+        list.filter(i=>i.date===date).forEach(i=>{
+            i.timeSlots.forEach(h=>{
+                let dom = document.querySelector(`.time-slot[data-hour="${h}"]`);
+                if(dom){dom.classList.add("conflict");dom.title=`已被${i.name}占用`;}
             });
         });
     }
 
-    async function renderAllRecords() {
-        const records = await loadRecords();
-        const upcoming = records.filter(r => r.date >= todayStr);
-        const expired = records.filter(r => r.date < todayStr);
+    // 渲染列表
+    async function renderList(){
+        let all = await loadRecords();
+        let soon = all.filter(x=>x.date>=todayStr);
+        let old = all.filter(x=>x.date<todayStr);
 
-        upcoming.sort((a, b) => new Date(a.date) - new Date(b.date));
-        expired.sort((a, b) => new Date(b.date) - new Date(a.date));
+        soon.sort((a,b)=>new Date(a.date)-new Date(b.date));
+        old.sort((a,b)=>new Date(b.date)-new Date(a.date));
 
-        const uBody = document.getElementById("upcomingBody");
-        const eBody = document.getElementById("expiredBody");
-        uBody.innerHTML = "";
-        eBody.innerHTML = "";
+        let uDom = document.getElementById("upcomingBody");
+        let oDom = document.getElementById("expiredBody");
+        uDom.innerHTML="";oDom.innerHTML="";
 
-        document.getElementById("upcomingEmpty").style.display = upcoming.length ? "none" : "block";
-        document.getElementById("expiredEmpty").style.display = expired.length ? "none" : "block";
+        document.getElementById("upcomingEmpty").style.display = soon.length?"none":"block";
+        document.getElementById("expiredEmpty").style.display = old.length?"none":"block";
 
-        upcoming.forEach((item, i) => {
-            const tr = document.createElement("tr");
-            const times = item.timeSlots.map(h => String(h).padStart(2, '0') + ":00").join(", ");
-            tr.innerHTML = `
-                <td>${item.date}</td>
-                <td>${times}</td>
-                <td>${item.name}</td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="edit-btn" data-idx="${i}">编辑</button>
-                        <button class="delete-btn" data-idx="${i}">删除</button>
-                    </div>
-                </td>`;
-            uBody.appendChild(tr);
+        soon.forEach((item,idx)=>{
+            let t = item.timeSlots.map(h=>String(h).padStart(2,"0")+":00").join("、");
+            uDom.innerHTML += `<tr><td>${item.date}</td><td>${t}</td><td>${item.name}</td>
+            <td><button class="edit-btn" data-i="${idx}">编辑</button><button class="delete-btn" data-i="${idx}">删除</button></td></tr>`;
         });
 
-        expired.forEach(item => {
-            const tr = document.createElement("tr");
-            const times = item.timeSlots.map(h => String(h).padStart(2, '0') + ":00").join(", ");
-            tr.innerHTML = `
-                <td>${item.date}</td>
-                <td>${times}</td>
-                <td>${item.name}</td>
-                <td>
-                    <button class="delete-btn" data-id="${item.id}">删除</button>
-                </td>`;
-            eBody.appendChild(tr);
+        old.forEach(item=>{
+            let t = item.timeSlots.map(h=>String(h).padStart(2,"0")+":00").join("、");
+            oDom.innerHTML += `<tr><td>${item.date}</td><td>${t}</td><td>${item.name}</td>
+            <td><button class="delete-btn" data-id="${item.id}">删除</button></td></tr>`;
         });
 
-        uBody.querySelectorAll(".edit-btn").forEach(btn => {
-            btn.onclick = async () => await editUpcoming(+btn.dataset.idx);
+        // 绑定编辑删除
+        uDom.querySelectorAll(".edit-btn").forEach(b=>{
+            b.onclick=async()=>{
+                let i = +b.dataset.i;
+                let data = soon[i];
+                currentUserName = data.name;
+                lastOperateText = "重新编辑原有录播室使用申请，已加载旧信息到表单";
+
+                document.getElementById("applicantName").value=data.name;
+                document.getElementById("department").value=data.department;
+                document.getElementById("useDate").value=data.date;
+                document.getElementById("purpose").value=data.purpose;
+
+                await refreshDate(data.date);
+                document.querySelectorAll(".time-slot.selected").forEach(x=>x.classList.remove("selected"));
+                data.timeSlots.forEach(h=>{
+                    let d = document.querySelector(`.time-slot[data-hour="${h}"]`);
+                    if(d&&!d.classList.contains("conflict"))d.classList.add("selected");
+                });
+
+                let total = await loadRecords();
+                let pos = total.findIndex(x=>x.id===data.id);
+                if(pos>-1){total.splice(pos,1);saveLocal(total);}
+                await renderList();
+                alert("旧申请已载入表单，修改后重新提交即可");
+            }
         });
-        uBody.querySelectorAll(".delete-btn").forEach(btn => {
-            btn.onclick = async () => await deleteUpcoming(+btn.dataset.idx);
+
+        uDom.querySelectorAll(".delete-btn").forEach(b=>{
+            b.onclick=async()=>{
+                if(!confirm("确定删除这条申请？"))return;
+                let i = +b.dataset.i;
+                let data = soon[i];
+                currentUserName = data.name;
+                let timeTxt = data.timeSlots.map(h=>h+":00").join("、");
+                lastOperateText = `删除${data.date} ${timeTxt}的录播室使用申请`;
+
+                let total = await loadRecords();
+                let newList = total.filter(x=>x.id!==data.id);
+                saveLocal(newList);
+                await renderList();
+                await refreshDate(document.getElementById("useDate").value);
+                document.getElementById("tipsModal").classList.add("active");
+            }
         });
-        eBody.querySelectorAll(".delete-btn").forEach(btn => {
-            btn.onclick = async () => await deleteExpired(btn.dataset.id);
+
+        oDom.querySelectorAll(".delete-btn").forEach(b=>{
+            b.onclick=async()=>{
+                if(!confirm("确定删除？"))return;
+                let id = b.dataset.id;
+                let total = await loadRecords();
+                let data = total.find(x=>x.id===id);
+                currentUserName = data.name;
+                lastOperateText = `删除${data.date}过期的录播室历史申请记录`;
+
+                let newList = total.filter(x=>x.id!==id);
+                saveLocal(newList);
+                await renderList();
+                document.getElementById("tipsModal").classList.add("active");
+            }
         });
     }
 
-    document.getElementById("applicationForm").addEventListener("submit", async e => {
+    // 提交表单
+    document.getElementById("applicationForm").addEventListener("submit",async e=>{
         e.preventDefault();
-        const name = document.getElementById("applicantName").value.trim();
-        const dept = document.getElementById("department").value;
-        const date = document.getElementById("useDate").value;
-        const purpose = document.getElementById("purpose").value.trim();
-        const selectedSlots = Array.from(document.querySelectorAll(".time-slot.selected")).map(s => +s.dataset.hour);
+        let name = document.getElementById("applicantName").value.trim();
+        let dept = document.getElementById("department").value;
+        let day = document.getElementById("useDate").value;
+        let reason = document.getElementById("purpose").value.trim();
+        let selectTime = Array.from(document.querySelectorAll(".time-slot.selected")).map(x=>+x.dataset.hour);
 
-        if (!name || !dept || !date || !purpose || selectedSlots.length === 0) {
-            alert("请填写完整信息并选择时间段！");
+        if(!name||!dept||!day||!reason||selectTime.length===0){
+            alert("请填全信息并选择使用时段！");
             return;
         }
 
-        lastOperatorName = name;
-        const timesStr = selectedSlots.map(h => `${h}:00`).join(",");
-        lastOperation = `使用日期：${date}\n使用时段：${timesStr}\n事由：${purpose}`;
+        currentUserName = name;
+        let timeStr = selectTime.map(h=>h+":00").join("、");
+        lastOperateText = `新增申请：申请${day} ${timeStr}使用录播室，用途备注：${reason}`;
 
-        const records = await loadRecords();
-        records.push({
-            id: Date.now().toString(),
-            name, department: dept, date, timeSlots: selectedSlots, purpose
+        let all = await loadRecords();
+        all.push({
+            id:Date.now().toString(),
+            name:name,
+            department:dept,
+            date:day,
+            timeSlots:selectTime,
+            purpose:reason
         });
+        saveLocal(all);
 
-        saveRecords(records);
-        await renderAllRecords();
-        await refreshOccupiedSlots(date);
+        await renderList();
+        await refreshDate(day);
         e.target.reset();
-        document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
+        document.querySelectorAll(".time-slot.selected").forEach(x=>x.classList.remove("selected"));
         document.getElementById("tipsModal").classList.add("active");
     });
 
-    document.getElementById("confirmBtn").addEventListener("click", () => {
+    // 弹窗已知晓
+    document.getElementById("confirmBtn").addEventListener("click",()=>{
         document.getElementById("tipsModal").classList.remove("active");
-        exportDualFiles(lastOperation);
-        alert("提交成功！文件已导出，请提交给数媒部负责人。");
+        exportTwoFile();
+        alert("导出完成！\n1.发给数媒部：请将此文件发给数媒部.json\n2.打印签字：请将此文件打印并签字.txt");
     });
 
-    document.getElementById("clearFormBtn").onclick = () => {
+    // 清空表单
+    document.getElementById("clearFormBtn").onclick=()=>{
         document.getElementById("applicationForm").reset();
-        document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
+        document.querySelectorAll(".time-slot.selected").forEach(x=>x.classList.remove("selected"));
     };
 
-    async function editUpcoming(index) {
-        const records = await loadRecords();
-        const upcoming = records.filter(r => r.date >= todayStr);
-        const item = upcoming[index];
-        const allRecords = await loadRecords();
-        const realIndex = allRecords.findIndex(x => x.id === item.id);
-        if (realIndex === -1) return;
-
-        lastOperatorName = item.name;
-        lastOperation = `编辑申请：${item.date} 的录播室使用申请`;
-
-        document.getElementById("applicantName").value = item.name;
-        document.getElementById("department").value = item.department;
-        document.getElementById("useDate").value = item.date;
-        document.getElementById("purpose").value = item.purpose;
-
-        await refreshOccupiedSlots(item.date);
-        document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
-        item.timeSlots.forEach(h => {
-            const slot = document.querySelector(`.time-slot[data-hour="${h}"]`);
-            if (slot && !slot.classList.contains("conflict")) slot.classList.add("selected");
-        });
-
-        allRecords.splice(realIndex, 1);
-        saveRecords(allRecords);
-        await renderAllRecords();
-        alert("已加载到表单，请修改后重新提交。");
-    }
-
-    async function deleteUpcoming(index) {
-        if (!confirm("确定删除这条申请？")) return;
-        const records = await loadRecords();
-        const upcoming = records.filter(r => r.date >= todayStr);
-        const item = upcoming[index];
-        
-        lastOperatorName = item.name;
-        lastOperation = `删除申请：${item.date} 的录播室使用申请`;
-
-        const newRecords = records.filter(x => x.id !== item.id);
-        saveRecords(newRecords);
-        await renderAllRecords();
-        await refreshOccupiedSlots(document.getElementById("useDate").value);
-        document.getElementById("tipsModal").classList.add("active");
-    }
-
-    async function deleteExpired(id) {
-        if (!confirm("确定删除这条过期记录？")) return;
-        const records = await loadRecords();
-        const item = records.find(x => x.id === id);
-        
-        lastOperatorName = item.name;
-        lastOperation = `删除过期申请：${item.date} 的录播室使用申请`;
-
-        const newRecords = records.filter(x => x.id !== id);
-        saveRecords(newRecords);
-        await renderAllRecords();
-        document.getElementById("tipsModal").classList.add("active");
-    }
-
-    async function initPage() {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const defaultDate = tomorrow.toISOString().split('T')[0];
-        document.getElementById("useDate").value = defaultDate;
+    // 页面初始化
+    async function init(){
+        let tmr = new Date();
+        tmr.setDate(tmr.getDate()+1);
+        let defDay = tmr.toISOString().split("T")[0];
+        document.getElementById("useDate").value = defDay;
         document.getElementById("useDate").min = todayStr;
 
-        initTimeSlots();
-        await refreshOccupiedSlots(defaultDate);
-        await renderAllRecords();
+        initTime();
+        await refreshDate(defDay);
+        await renderList();
 
-        document.getElementById("useDate").addEventListener("change", async () => {
-            await refreshOccupiedSlots(document.getElementById("useDate").value);
-            document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
+        document.getElementById("useDate").addEventListener("change",async()=>{
+            await refreshDate(document.getElementById("useDate").value);
+            document.querySelectorAll(".time-slot.selected").forEach(x=>x.classList.remove("selected"));
         });
     }
 
-    window.addEventListener("DOMContentLoaded", initPage);
+    window.addEventListener("DOMContentLoaded",init);
 </script>
 </body>
 </html>
