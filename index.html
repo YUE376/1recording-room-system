@@ -249,7 +249,7 @@
 
         .edit-btn {
             padding: 5px 9px;
-            abackground: #f59e0b;
+            background: #f59e0b;
             color: #fff;
             border: none;
             border-radius: 4px;
@@ -281,7 +281,6 @@
             border-top: 1px solid #f0f4f8;
         }
 
-        /* 弹窗样式 */
         .modal {
             position: fixed;
             top: 0;
@@ -315,7 +314,7 @@
 
         .modal-title {
             font-size: 18px;
-            acolor: #1f2937;
+            color: #1f2937;
             margin-bottom: 15px;
             font-weight: 600;
         }
@@ -454,7 +453,6 @@
     </div>
 </div>
 
-<!-- 提示弹窗 -->
 <div class="modal" id="tipsModal">
     <div class="modal-content">
         <h3 class="modal-title">提交成功</h3>
@@ -511,13 +509,12 @@
         const userName = lastOperatorName || "未知用户";
         const txtFilename = `${userName}.${timeStr}.txt`;
         
-        // 极简领导版内容
         const txtContent = 
 `录播室使用申请
 ——————————————
 申请人：${userName}
 申请时间：${timeStr}
-${operationDesc.replace(/新增申请：|编辑申请：|删除申请：/g, "")}
+${operationDesc}
 
 请领导审阅。`;
         
@@ -534,9 +531,7 @@ ${operationDesc.replace(/新增申请：|编辑申请：|删除申请：/g, "")}
             const hh = String(h).padStart(2, '0');
             slot.innerText = `${hh}:00-${hh}:59`;
             slot.onclick = () => {
-                if (!slot.classList.contains("conflict")) {
-                    slot.classList.toggle("selected");
-                }
+                if (!slot.classList.contains("conflict")) slot.classList.toggle("selected");
             };
             box.appendChild(slot);
         }
@@ -548,7 +543,6 @@ ${operationDesc.replace(/新增申请：|编辑申请：|删除申请：/g, "")}
             s.classList.remove("conflict");
             s.title = "";
         });
-
         records.filter(r => r.date === date).forEach(r => {
             r.timeSlots.forEach(h => {
                 const slot = document.querySelector(`.time-slot[data-hour="${h}"]`);
@@ -630,34 +624,27 @@ ${operationDesc.replace(/新增申请：|编辑申请：|删除申请：/g, "")}
         }
 
         lastOperatorName = name;
-        const timesStr = selectedSlots.map(h => String(h).padStart(2, '0') + ":00").join(", ");
-        lastOperation = `申请时间：${date} ${timesStr}
-事由：${purpose}`;
+        const timesStr = selectedSlots.map(h => `${h}:00`).join(",");
+        lastOperation = `使用日期：${date}\n使用时段：${timesStr}\n事由：${purpose}`;
 
         const records = await loadRecords();
         records.push({
             id: Date.now().toString(),
-            name,
-            department: dept,
-            date,
-            timeSlots: selectedSlots,
-            purpose,
-            submitTime: new Date().toLocaleString()
+            name, department: dept, date, timeSlots: selectedSlots, purpose
         });
 
         saveRecords(records);
         await renderAllRecords();
         await refreshOccupiedSlots(date);
-        document.getElementById("applicationForm").reset();
+        e.target.reset();
         document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
-
         document.getElementById("tipsModal").classList.add("active");
     });
 
     document.getElementById("confirmBtn").addEventListener("click", () => {
         document.getElementById("tipsModal").classList.remove("active");
         exportDualFiles(lastOperation);
-        alert("导出成功！");
+        alert("提交成功！文件已导出，请提交给数媒部负责人。");
     });
 
     document.getElementById("clearFormBtn").onclick = () => {
@@ -674,7 +661,7 @@ ${operationDesc.replace(/新增申请：|编辑申请：|删除申请：/g, "")}
         if (realIndex === -1) return;
 
         lastOperatorName = item.name;
-        lastOperation = `编辑申请：${item.date}的使用申请`;
+        lastOperation = `编辑申请：${item.date} 的录播室使用申请`;
 
         document.getElementById("applicantName").value = item.name;
         document.getElementById("department").value = item.department;
@@ -691,7 +678,7 @@ ${operationDesc.replace(/新增申请：|编辑申请：|删除申请：/g, "")}
         allRecords.splice(realIndex, 1);
         saveRecords(allRecords);
         await renderAllRecords();
-        alert("已加载，请重新提交。");
+        alert("已加载到表单，请修改后重新提交。");
     }
 
     async function deleteUpcoming(index) {
@@ -701,7 +688,7 @@ ${operationDesc.replace(/新增申请：|编辑申请：|删除申请：/g, "")}
         const item = upcoming[index];
         
         lastOperatorName = item.name;
-        lastOperation = `删除申请：${item.date}的使用申请`;
+        lastOperation = `删除申请：${item.date} 的录播室使用申请`;
 
         const newRecords = records.filter(x => x.id !== item.id);
         saveRecords(newRecords);
@@ -716,7 +703,7 @@ ${operationDesc.replace(/新增申请：|编辑申请：|删除申请：/g, "")}
         const item = records.find(x => x.id === id);
         
         lastOperatorName = item.name;
-        lastOperation = `删除过期申请：${item.date}的使用申请`;
+        lastOperation = `删除过期申请：${item.date} 的录播室使用申请`;
 
         const newRecords = records.filter(x => x.id !== id);
         saveRecords(newRecords);
@@ -732,7 +719,7 @@ ${operationDesc.replace(/新增申请：|编辑申请：|删除申请：/g, "")}
         document.getElementById("useDate").min = todayStr;
 
         initTimeSlots();
-        await refreshOccupied(defaultDate);
+        await refreshOccupiedSlots(defaultDate);
         await renderAllRecords();
 
         document.getElementById("useDate").addEventListener("change", async () => {
