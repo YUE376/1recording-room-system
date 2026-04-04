@@ -249,8 +249,7 @@
 
         .edit-btn {
             padding: 5px 9px;
-            font-size: 12px;
-            background: #f59e0b;
+            abackground: #f59e0b;
             color: #fff;
             border: none;
             border-radius: 4px;
@@ -259,7 +258,6 @@
 
         .delete-btn {
             padding: 5px 9px;
-            font-size: 12px;
             background: #ef4444;
             color: #fff;
             border: none;
@@ -317,7 +315,7 @@
 
         .modal-title {
             font-size: 18px;
-            color: #1f2937;
+            acolor: #1f2937;
             margin-bottom: 15px;
             font-weight: 600;
         }
@@ -468,10 +466,9 @@
 <script>
     const DATA_FILE = "recording-room-records.json";
     const todayStr = new Date().toISOString().split('T')[0];
-    let lastOperation = ""; // 记录最后一次操作内容
-    let lastOperatorName = ""; // 记录最后操作的申请人姓名
+    let lastOperation = "";
+    let lastOperatorName = "";
 
-    // 格式化时间（用于文件名）：yyyy-mm-dd hh:mm:ss
     function formatDateTime(date) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -482,7 +479,6 @@
         return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
     }
 
-    // 从云端加载记录
     async function loadRecords() {
         try {
             const res = await fetch(`./${DATA_FILE}?t=${Date.now()}`);
@@ -493,12 +489,10 @@
         }
     }
 
-    // 保存到本地
     function saveRecords(records) {
         localStorage.setItem("recordingRoomRecords", JSON.stringify(records));
     }
 
-    // 导出文件通用方法
     function exportFile(content, filename, type) {
         const blob = new Blob([content], { type: type });
         const a = document.createElement("a");
@@ -508,34 +502,28 @@
         URL.revokeObjectURL(a.href);
     }
 
-    // 导出双文件（JSON数据 + TXT操作记录）
     function exportDualFiles(operationDesc) {
-        // 1. 导出JSON数据文件
         const records = JSON.parse(localStorage.getItem("recordingRoomRecords")) || [];
         exportFile(JSON.stringify(records, null, 2), DATA_FILE, "application/json");
 
-        // 2. 导出TXT操作记录文件（按新规则命名）
         const now = new Date();
         const timeStr = formatDateTime(now);
         const userName = lastOperatorName || "未知用户";
-        // 文件名：申请人姓名.修改时间.txt
         const txtFilename = `${userName}.${timeStr}.txt`;
         
-        const txtContent = `录播室申请系统操作记录
-============================
-操作时间：${timeStr}
-操作人：${userName}
-操作内容：${operationDesc}
+        // 极简领导版内容
+        const txtContent = 
+`录播室使用申请
+——————————————
+申请人：${userName}
+申请时间：${timeStr}
+${operationDesc.replace(/新增申请：|编辑申请：|删除申请：/g, "")}
 
-本次完整申请记录：
-${JSON.stringify(records.slice(-1)[0] || {}, null, 2)}
-============================
-提示：请将此文件和${DATA_FILE}一并提交给数媒部负责人`;
+请领导审阅。`;
         
         exportFile(txtContent, txtFilename, "text/plain;charset=utf-8");
     }
 
-    // 初始化24小时时间段
     function initTimeSlots() {
         const box = document.getElementById("timeSlots");
         box.innerHTML = "";
@@ -554,7 +542,6 @@ ${JSON.stringify(records.slice(-1)[0] || {}, null, 2)}
         }
     }
 
-    // 刷新占用时段（标红禁用）
     async function refreshOccupiedSlots(date) {
         const records = await loadRecords();
         document.querySelectorAll(".time-slot").forEach(s => {
@@ -573,7 +560,6 @@ ${JSON.stringify(records.slice(-1)[0] || {}, null, 2)}
         });
     }
 
-    // 渲染：即将使用 + 过期记录
     async function renderAllRecords() {
         const records = await loadRecords();
         const upcoming = records.filter(r => r.date >= todayStr);
@@ -614,14 +600,11 @@ ${JSON.stringify(records.slice(-1)[0] || {}, null, 2)}
                 <td>${times}</td>
                 <td>${item.name}</td>
                 <td>
-                    <div class="action-buttons">
-                        <button class="delete-btn" data-id="${item.id}">删除</button>
-                    </div>
+                    <button class="delete-btn" data-id="${item.id}">删除</button>
                 </td>`;
             eBody.appendChild(tr);
         });
 
-        // 绑定事件
         uBody.querySelectorAll(".edit-btn").forEach(btn => {
             btn.onclick = async () => await editUpcoming(+btn.dataset.idx);
         });
@@ -633,7 +616,6 @@ ${JSON.stringify(records.slice(-1)[0] || {}, null, 2)}
         });
     }
 
-    // 提交申请（合并同步云端功能）
     document.getElementById("applicationForm").addEventListener("submit", async e => {
         e.preventDefault();
         const name = document.getElementById("applicantName").value.trim();
@@ -647,12 +629,11 @@ ${JSON.stringify(records.slice(-1)[0] || {}, null, 2)}
             return;
         }
 
-        // 记录本次操作人和操作内容
         lastOperatorName = name;
         const timesStr = selectedSlots.map(h => String(h).padStart(2, '0') + ":00").join(", ");
-        lastOperation = `新增申请：申请人${name}（${dept}），申请${date} ${timesStr}使用录播室，事由：${purpose}`;
+        lastOperation = `申请时间：${date} ${timesStr}
+事由：${purpose}`;
 
-        // 保存申请记录
         const records = await loadRecords();
         records.push({
             id: Date.now().toString(),
@@ -670,26 +651,20 @@ ${JSON.stringify(records.slice(-1)[0] || {}, null, 2)}
         document.getElementById("applicationForm").reset();
         document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
 
-        // 显示提示弹窗
         document.getElementById("tipsModal").classList.add("active");
     });
 
-    // 弹窗已知晓按钮事件
     document.getElementById("confirmBtn").addEventListener("click", () => {
-        // 关闭弹窗
         document.getElementById("tipsModal").classList.remove("active");
-        // 导出双文件
         exportDualFiles(lastOperation);
-        alert("文件导出成功！请将导出的两个文件提交给数媒部负责人。");
+        alert("导出成功！");
     });
 
-    // 清空表单
     document.getElementById("clearFormBtn").onclick = () => {
         document.getElementById("applicationForm").reset();
         document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
     };
 
-    // 编辑即将使用
     async function editUpcoming(index) {
         const records = await loadRecords();
         const upcoming = records.filter(r => r.date >= todayStr);
@@ -698,9 +673,8 @@ ${JSON.stringify(records.slice(-1)[0] || {}, null, 2)}
         const realIndex = allRecords.findIndex(x => x.id === item.id);
         if (realIndex === -1) return;
 
-        // 记录编辑操作人和内容
         lastOperatorName = item.name;
-        lastOperation = `编辑申请：原申请人${item.name}（${item.department}），${item.date}的申请记录已加载到表单待修改`;
+        lastOperation = `编辑申请：${item.date}的使用申请`;
 
         document.getElementById("applicantName").value = item.name;
         document.getElementById("department").value = item.department;
@@ -717,50 +691,39 @@ ${JSON.stringify(records.slice(-1)[0] || {}, null, 2)}
         allRecords.splice(realIndex, 1);
         saveRecords(allRecords);
         await renderAllRecords();
-        alert("已加载到表单，请修改后重新提交。");
+        alert("已加载，请重新提交。");
     }
 
-    // 删除即将使用
     async function deleteUpcoming(index) {
         if (!confirm("确定删除这条申请？")) return;
         const records = await loadRecords();
         const upcoming = records.filter(r => r.date >= todayStr);
         const item = upcoming[index];
         
-        // 记录删除操作人和内容
         lastOperatorName = item.name;
-        const timesStr = item.timeSlots.map(h => String(h).padStart(2, '0') + ":00").join(", ");
-        lastOperation = `删除申请：删除${item.name}（${item.department}）在${item.date} ${timesStr}的录播室申请`;
+        lastOperation = `删除申请：${item.date}的使用申请`;
 
         const newRecords = records.filter(x => x.id !== item.id);
         saveRecords(newRecords);
         await renderAllRecords();
         await refreshOccupiedSlots(document.getElementById("useDate").value);
-        
-        // 显示提示弹窗
         document.getElementById("tipsModal").classList.add("active");
     }
 
-    // 删除过期记录
     async function deleteExpired(id) {
         if (!confirm("确定删除这条过期记录？")) return;
         const records = await loadRecords();
         const item = records.find(x => x.id === id);
         
-        // 记录删除操作人和内容
         lastOperatorName = item.name;
-        const timesStr = item.timeSlots.map(h => String(h).padStart(2, '0') + ":00").join(", ");
-        lastOperation = `删除过期申请：删除${item.name}（${item.department}）在${item.date} ${timesStr}的录播室申请`;
+        lastOperation = `删除过期申请：${item.date}的使用申请`;
 
         const newRecords = records.filter(x => x.id !== id);
         saveRecords(newRecords);
         await renderAllRecords();
-        
-        // 显示提示弹窗
         document.getElementById("tipsModal").classList.add("active");
     }
 
-    // 初始化页面
     async function initPage() {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
@@ -769,7 +732,7 @@ ${JSON.stringify(records.slice(-1)[0] || {}, null, 2)}
         document.getElementById("useDate").min = todayStr;
 
         initTimeSlots();
-        await refreshOccupiedSlots(defaultDate);
+        await refreshOccupied(defaultDate);
         await renderAllRecords();
 
         document.getElementById("useDate").addEventListener("change", async () => {
