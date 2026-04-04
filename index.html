@@ -1,12 +1,5 @@
-<!DOCTYPE html> <html lang="zh-CN"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>录播室申请管理系统 - 云端版</title> <style> * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Microsoft YaHei', sans-serif; }
-            body {
-        background-color: #f5f7fa;
-        color: #333;
-        line-height: 1.6;
-        padding: 20px;
-    }
-    
-    .container {
+<!DOCTYPE html> <html lang="zh-CN"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>录播室申请管理系统 - 云端版</title> <style> * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Microsoft YaHei', sans-serif; } body { background-color: #f5f7fa; color: #333; line-height: 1.6; padding: 20px; }
+                .container {
         max-width: 1200px;
         margin: 0 auto;
         background-color: white;
@@ -427,7 +420,7 @@
         repo: '1recording-room-system',
         branch: 'main',
         dataFile: 'recording-room-data.json',
-        token: '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'
+        token: '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'
     };
     
     // GitHub API基础URL
@@ -519,690 +512,86 @@
                 // 尝试直接解码
                 content = atob(data.content);
             } catch (e) {
-                // 如果直接解码失败，使用UTF-8编码处理
-                content = decodeURIComponent(escape(atob(data.content)));
-            }
-            
-            const records = JSON.parse(content || '[]');
-            
-            updateSyncStatus('connected');
-            return records;
-        } catch (error) {
-            console.error('从GitHub加载数据失败:', error);
-            
-            // 尝试从本地缓存加载
-            const cachedRecords = localStorage.getItem('recordingRoomRecords_cache');
-            if (cachedRecords) {
-                try {
-                    const parsedRecords = JSON.parse(cachedRecords);
-                    updateSyncStatus('error', '云端连接失败，使用本地缓存数据');
-                    return parsedRecords;
-                } catch (e) {
-                    console.error('本地缓存数据解析失败:', e);
-                    updateSyncStatus('error', '本地缓存数据损坏');
-                    return [];
-                }
-            }
-            
-            updateSyncStatus('error', '云端连接失败且无本地缓存');
-            return [];
-        }
-    }
-    
-    // 保存申请记录到GitHub - 修复版本
-    async function saveRecordsToGitHub(records) {
-        try {
-            updateSyncStatus('syncing');
-            
-            // 先获取文件当前的SHA（如果存在）
-            let sha = null;
-            let fileExists = false;
-            
-            try {
-                const apiUrl = `${GITHUB_API_BASE}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.dataFile}?ref=${GITHUB_CONFIG.branch}`;
-                
-                const headers = {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                };
-                
-                if (GITHUB_CONFIG.token && GITHUB_CONFIG.token !== '') {
-                    headers['Authorization'] = `token ${GITHUB_CONFIG.token}`;
-                }
-                
-                const getResponse = await fetch(apiUrl, { headers });
-                
-                if (getResponse.ok) {
-                    const data = await getResponse.json();
-                    sha = data.sha;
-                    fileExists = true;
-                }
-            } catch (error) {
-                // 文件不存在，将创建新文件
-                console.log('GitHub数据文件不存在，将创建新文件');
-                fileExists = false;
-            }
-            
-            // 准备要保存的数据
-            const content = JSON.stringify(records, null, 2);
-            
-            // 修复base64编码问题
-            let encodedContent;
-            try {
-                // 使用UTF-8安全编码
-                encodedContent = btoa(unescape(encodeURIComponent(content)));
-            } catch (e) {
-                // 备用编码方法
-                encodedContent = btoa(content);
-            }
-            
-            // 创建或更新文件
-            const updateUrl = `${GITHUB_API_BASE}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.dataFile}`;
-            
-            const requestBody = {
-                message: `更新录播室申请记录 - ${new Date().toLocaleString('zh-CN')}`,
-                content: encodedContent,
-                branch: GITHUB_CONFIG.branch
-            };
-            
-            // 如果文件已存在，添加SHA
-            if (fileExists && sha) {
-                requestBody.sha = sha;
-            }
-            
-            const response = await fetch(updateUrl, {
-                method: 'PUT',
-                headers: {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json',
-                    ...(GITHUB_CONFIG.token && GITHUB_CONFIG.token !== '' ? { 'Authorization': `token ${GITHUB_CONFIG.token}` } : {})
-                },
-                body: JSON.stringify(requestBody)
-            });
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`GitHub API错误: ${response.status} - ${errorData.message || '未知错误'}`);
-            }
-            
-            // 同时更新本地缓存
-            localStorage.setItem('recordingRoomRecords_cache', JSON.stringify(records));
-            
-            updateSyncStatus('connected');
-            return true;
-        } catch (error) {
-            console.error('保存到GitHub失败:', error);
-            
-            // 保存到本地缓存作为备份
-            try {
-                localStorage.setItem('recordingRoomRecords_cache', JSON.stringify(records));
-                updateSyncStatus('error', '云端保存失败，数据已保存到本地缓存');
-                
-                // 显示详细错误信息
-                let errorMessage = '云端保存失败，数据已保存到本地缓存。';
-                if (error.message.includes('401') || error.message.includes('403')) {
-                    errorMessage += ' 请检查GitHub Token是否有写入权限。';
-                } else if (error.message.includes('404')) {
-                    errorMessage += ' 仓库或文件不存在，请检查配置。';
-                } else {
-                    errorMessage += ' 请检查网络连接。';
-                }
-                
-                alert(errorMessage);
-            } catch (storageError) {
-                console.error('本地缓存保存失败:', storageError);
-                updateSyncStatus('error', '云端和本地缓存保存均失败');
-                alert('数据保存失败，请检查浏览器存储权限。');
-            }
-            
-            return false;
-        }
-    }
-    
-    // 显示申请记录
-    async function displayRecords() {
-        try {
-            const records = await loadRecordsFromGitHub();
-            const recordsBody = document.getElementById('recordsBody');
-            recordsBody.innerHTML = '';
-            
-            if (!records || records.length === 0) {
-                recordsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #7f8c8d;">暂无申请记录</td></tr>';
-                return;
-            }
-            
-            // 按日期排序，最新的在前面
-            records.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            records.forEach((record, index) => {
-                const row = document.createElement('tr');
-                
-                // 格式化时间段显示
-                const timeSlots = record.timeSlots.map(hour => {
-                    const displayHour = hour.toString().padStart(2, '0');
-                    return `${displayHour}:00`;
-                }).join(', ');
-                
-                row.innerHTML = `
-                    <td>${record.date}</td>
-                    <td>${timeSlots}</td>
-                    <td>${record.name}</td>
-                    <td>${record.department}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="edit-btn" data-index="${index}">编辑</button>
-                            <button class="delete-btn" data-index="${index}">删除</button>
-                        </div>
-                    </td>
-                `;
-                
-                recordsBody.appendChild(row);
-            });
-            
-            // 添加编辑和删除事件监听
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const index = parseInt(this.dataset.index);
-                    editRecord(index);
-                });
-            });
-            
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const index = parseInt(this.dataset.index);
-                    deleteRecord(index);
-                });
-            });
-        } catch (error) {
-            console.error('显示记录失败:', error);
-            const recordsBody = document.getElementById('recordsBody');
-            recordsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #e74c3c;">加载记录失败，请检查网络连接</td></tr>';
-        }
-    }
-    
-    // 检查时间冲突
-    async function checkTimeConflict(date, timeSlots) {
-        try {
-            const records = await loadRecordsFromGitHub();
-            
-            if (!records || !Array.isArray(records)) {
-                return { conflict: false };
-            }
-            
-            for (const record of records) {
-                if (record.date === date) {
-                    // 检查是否有重叠的时间段
-                    const hasConflict = timeSlots.some(slot => 
-                        record.timeSlots && record.timeSlots.includes(slot)
-                    );
-                    
-                    if (hasConflict) {
-                        return {
-                            conflict: true,
-                            conflictingRecord: record
-                        };
-                    }
-                }
-            }
-            
-            return { conflict: false };
-        } catch (error) {
-            console.error('检查时间冲突失败:', error);
-            return { conflict: false };
-        }
-    }
-    
-    // 显示冲突提示
-    function showConflictMessage(conflictingRecord, date, timeSlots) {
-        const conflictMessage = document.getElementById('conflictMessage');
-        const conflictModal = document.getElementById('conflictModal');
+                // 如果直接解码失败
+// 从GitHub加载申请记录 - 修复版本
+async function loadRecordsFromGitHub() {
+    try {
+        updateSyncStatus('syncing');
         
-        const conflictTimes = timeSlots.filter(slot => 
-            conflictingRecord.timeSlots && conflictingRecord.timeSlots.includes(slot)
-        ).map(hour => {
-            const displayHour = hour.toString().padStart(2, '0');
-            return `${displayHour}:00-${displayHour}:59`;
-        }).join(', ');
+        // 构建API URL
+        const apiUrl = `${GITHUB_API_BASE}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.dataFile}?ref=${GITHUB_CONFIG.branch}`;
         
-        conflictMessage.textContent = 
-            `您选择的时间段与已有申请冲突！\n\n冲突时间：${date} ${conflictTimes}\n冲突申请人：${conflictingRecord.name}\n所属部门：${conflictingRecord.department}\n\n请选择其他时间段。`;
-        
-        conflictModal.style.display = 'flex';
-        
-        // 高亮显示冲突的时间段
-        const allTimeSlots = document.querySelectorAll('.time-slot');
-        allTimeSlots.forEach(slot => {
-            const hour = parseInt(slot.dataset.hour);
-            if (conflictingRecord.timeSlots && conflictingRecord.timeSlots.includes(hour)) {
-                slot.classList.add('conflict');
-            }
-        });
-    }
-    
-    // 提交申请
-    async function submitApplication(event) {
-        event.preventDefault();
-        
-        const name = document.getElementById('applicantName').value.trim();
-        const department = document.getElementById('department').value;
-        const date = document.getElementById('useDate').value;
-        const purpose = document.getElementById('purpose').value.trim();
-        
-        // 获取选中的时间段
-        const selectedTimeSlots = Array.from(document.querySelectorAll('.time-slot.selected'))
-            .map(slot => parseInt(slot.dataset.hour));
-        
-        // 验证表单
-        if (!name || !department || !date || !purpose || selectedTimeSlots.length === 0) {
-            alert('请填写所有必填项并选择至少一个时间段！');
-            return;
-        }
-        
-        // 检查时间冲突
-        const conflictCheck = await checkTimeConflict(date, selectedTimeSlots);
-        if (conflictCheck.conflict) {
-            showConflictMessage(conflictCheck.conflictingRecord, date, selectedTimeSlots);
-            return;
-        }
-        
-        // 创建申请记录
-        const newRecord = {
-            id: Date.now(),
-            name,
-            department,
-            date,
-            timeSlots: selectedTimeSlots,
-            purpose,
-            submitTime: new Date().toLocaleString('zh-CN')
+        // 设置请求头
+        const headers = {
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
         };
         
-        // 加载现有记录，添加新记录，然后保存
-        let records = [];
+        // 如果有token，添加到请求头
+        if (GITHUB_CONFIG.token && GITHUB_CONFIG.token !== '') {
+            headers['Authorization'] = `token ${GITHUB_CONFIG.token}`;
+        }
+        
+        // 尝试从GitHub获取数据
+        const response = await fetch(apiUrl, { headers });
+        
+        if (response.status === 404) {
+            // 文件不存在，创建新文件
+            console.log('GitHub数据文件不存在，将创建新文件');
+            updateSyncStatus('connected', '云端文件不存在，已创建新文件');
+            return [];
+        }
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`GitHub API错误: ${response.status} - ${errorData.message || '未知错误'}`);
+        }
+        
+        const data = await response.json();
+        
+        // 修复base64解码问题
+        let content;
         try {
-            records = await loadRecordsFromGitHub();
-        } catch (error) {
-            console.error('加载现有记录失败:', error);
-            records = [];
-        }
-        
-        records.push(newRecord);
-        
-        // 保存到GitHub
-        const success = await saveRecordsToGitHub(records);
-        
-        if (success) {
-            // 更新显示
-            await displayRecords();
-            
-            // 重置表单
-            document.getElementById('applicationForm').reset();
-            
-            // 清除所有选中的时间段
-            document.querySelectorAll('.time-slot.selected').forEach(slot => {
-                slot.classList.remove('selected');
-            });
-            
-            // 清除冲突标记
-            document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-                slot.classList.remove('conflict');
-            });
-            
-            alert('申请提交成功！数据已同步到云端。');
-        }
-    }
-    
-    // 编辑申请记录
-    async function editRecord(index) {
-        try {
-            const records = await loadRecordsFromGitHub();
-            if (!records || !records[index]) {
-                alert('记录不存在或加载失败');
-                return;
-            }
-            
-            const record = records[index];
-            
-            // 填充表单
-            document.getElementById('applicantName').value = record.name || '';
-            document.getElementById('department').value = record.department || '';
-            document.getElementById('useDate').value = record.date || '';
-            document.getElementById('purpose').value = record.purpose || '';
-            
-            // 清除之前的选择
-            document.querySelectorAll('.time-slot.selected').forEach(slot => {
-                slot.classList.remove('selected');
-            });
-            
-            // 清除冲突标记
-            document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-                slot.classList.remove('conflict');
-            });
-            
-            // 选择对应的时间段
-            if (record.timeSlots && Array.isArray(record.timeSlots)) {
-                record.timeSlots.forEach(hour => {
-                    const slot = document.querySelector(`.time-slot[data-hour="${hour}"]`);
-                    if (slot) {
-                        slot.classList.add('selected');
-                    }
-                });
-            }
-            
-            // 删除原记录
-            records.splice(index, 1);
-            await saveRecordsToGitHub(records);
-            await displayRecords();
-            
-            // 滚动到表单区域
-            document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
-            
-            alert('已加载申请记录到表单，请修改后重新提交。');
-        } catch (error) {
-            console.error('编辑记录失败:', error);
-            alert('编辑记录失败，请重试。');
-        }
-    }
-    
-    // 删除申请记录
-    async function deleteRecord(index) {
-        if (confirm('确定要删除这条申请记录吗？')) {
+            // 尝试直接解码
+            content = atob(data.content);
+        } catch (e) {
+            // 如果直接解码失败，尝试使用TextDecoder进行解码
+            console.log('atob解码失败，尝试使用TextDecoder:', e.message);
             try {
-                const records = await loadRecordsFromGitHub();
-                if (!records || !records[index]) {
-                    alert('记录不存在或加载失败');
-                    return;
+                const binaryString = atob(data.content.replace(/\s/g, ''));
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
                 }
-                
-                records.splice(index, 1);
-                await saveRecordsToGitHub(records);
-                await displayRecords();
-                alert('申请记录已删除。');
-            } catch (error) {
-                console.error('删除记录失败:', error);
-                alert('删除记录失败，请重试。');
+                const decoder = new TextDecoder('utf-8');
+                content = decoder.decode(bytes);
+            } catch (decodeError) {
+                console.error('TextDecoder解码也失败:', decodeError);
+                // 如果两种方法都失败，尝试直接使用原始内容
+                content = data.content;
             }
         }
-    }
-    
-    // 导出申请记录
-    async function exportRecords() {
+        
+        // 解析JSON数据
+        const records = JSON.parse(content);
+        updateSyncStatus('connected');
+        return records;
+    } catch (error) {
+        console.error('从GitHub加载数据失败:', error);
+        
+        // 尝试从本地缓存加载
         try {
-            const records = await loadRecordsFromGitHub();
-            
-            if (!records || records.length === 0) {
-                alert('暂无申请记录可导出。');
-                return;
+            const cachedData = localStorage.getItem('recordingRoomRecords_cache');
+            if (cachedData) {
+                const records = JSON.parse(cachedData);
+                updateSyncStatus('error', '云端连接失败，已加载本地缓存数据');
+                return records;
             }
-            
-            // 创建导出内容
-            let exportContent = '录播室申请记录（云端存储）\n';
-            exportContent += '导出时间：' + new Date().toLocaleString('zh-CN') + '\n';
-            exportContent += '数据来源：GitHub云端仓库\n';
-            exportContent += '仓库地址：https://github.com/yue376/1recording-room-system\n';
-            exportContent += '='.repeat(50) + '\n\n';
-            
-            records.forEach((record, index) => {
-                exportContent += `记录 ${index + 1}:\n`;
-                exportContent += `申请日期：${record.submitTime || '未知'}\n`;
-                exportContent += `使用日期：${record.date || '未知'}\n`;
-                
-                if (record.timeSlots && Array.isArray(record.timeSlots)) {
-                    exportContent += `使用时间段：${record.timeSlots.map(hour => {
-                        const displayHour = hour.toString().padStart(2, '0');
-                        return `${displayHour}:00-${displayHour}:59`;
-                    }).join(', ')}\n`;
-                } else {
-                    exportContent += `使用时间段：未知\n`;
-                }
-                
-                exportContent += `申请人：${record.name || '未知'}\n`;
-                exportContent += `部门：${record.department || '未知'}\n`;
-                exportContent += `申请事由：${record.purpose || '未知'}\n`;
-                exportContent += '-'.repeat(40) + '\n\n';
-            });
-            
-            // 创建Blob对象并下载
-            const blob = new Blob([exportContent], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `录播室申请记录_${new Date().toISOString().slice(0, 10)}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            alert('申请记录已导出为TXT文件。');
-        } catch (error) {
-            console.error('导出记录失败:', error);
-            alert('导出记录失败，请重试。');
+        } catch (cacheError) {
+            console.error('加载本地缓存也失败:', cacheError);
         }
+        
+        updateSyncStatus('error', '云端连接失败且无本地缓存');
+        return [];
     }
-    
-    // 一键复制到剪贴板
-    async function copyToClipboard() {
-        try {
-            const records = await loadRecordsFromGitHub();
-            
-            if (!records || records.length === 0) {
-                alert('暂无申请记录可复制。');
-                return;
-            }
-            
-            // 创建复制内容
-            let copyContent = '录播室申请记录（云端存储）\n';
-            copyContent += '复制时间：' + new Date().toLocaleString('zh-CN') + '\n';
-            copyContent += '数据来源：GitHub云端仓库\n';
-            copyContent += '仓库地址：https://github.com/yue376/1recording-room-system\n';
-            copyContent += '='.repeat(50) + '\n\n';
-            
-            records.forEach((record, index) => {
-                copyContent += `记录 ${index + 1}:\n`;
-                copyContent += `申请日期：${record.submitTime || '未知'}\n`;
-                copyContent += `使用日期：${record.date || '未知'}\n`;
-                
-                if (record.timeSlots && Array.isArray(record.timeSlots)) {
-                    copyContent += `使用时间段：${record.timeSlots.map(hour => {
-                        const displayHour = hour.toString().padStart(2, '0');
-                        return `${displayHour}:00-${displayHour}:59`;
-                    }).join(', ')}\n`;
-                } else {
-                    copyContent += `使用时间段：未知\n`;
-                }
-                
-                copyContent += `申请人：${record.name || '未知'}\n`;
-                copyContent += `部门：${record.department || '未知'}\n`;
-                copyContent += `申请事由：${record.purpose || '未知'}\n`;
-                copyContent += '-'.repeat(40) + '\n\n';
-            });
-            
-            // 使用Clipboard API复制到剪贴板
-            try {
-                await navigator.clipboard.writeText(copyContent);
-                alert('申请记录已复制到剪贴板，可以粘贴到TXT文件中。');
-            } catch (err) {
-                // 如果Clipboard API不可用，使用备用方法
-                const textArea = document.createElement('textarea');
-                textArea.value = copyContent;
-                               document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                alert('申请记录已复制到剪贴板，可以粘贴到TXT文件中。');
-            }
-        } catch (error) {
-            console.error('复制到剪贴板失败:', error);
-            alert('复制到剪贴板失败，请手动复制或使用导出功能。');
-        }
-    }
-    
-    // 清空表单
-    function clearForm() {
-        if (confirm('确定要清空表单内容吗？')) {
-            document.getElementById('applicationForm').reset();
-            document.querySelectorAll('.time-slot.selected').forEach(slot => {
-                slot.classList.remove('selected');
-            });
-            document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-                slot.classList.remove('conflict');
-            });
-        }
-    }
-    
-    // 手动同步数据
-    async function syncData() {
-        try {
-            await displayRecords();
-            alert('数据已从云端同步完成！');
-        } catch (error) {
-            console.error('同步数据失败:', error);
-            alert('同步数据失败，请检查网络连接。');
-        }
-    }
-    
-    // 初始化页面
-    async function initPage() {
-        try {
-            // 设置默认日期为明天
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const formattedDate = tomorrow.toISOString().split('T')[0];
-            document.getElementById('useDate').value = formattedDate;
-            document.getElementById('useDate').min = formattedDate;
-            
-            // 初始化时间槽位
-            initTimeSlots();
-            
-            // 显示已有记录
-            await displayRecords();
-            
-            // 表单提交事件
-            document.getElementById('applicationForm').addEventListener('submit', submitApplication);
-            
-            // 导出按钮事件
-            document.getElementById('exportBtn').addEventListener('click', exportRecords);
-            
-            // 同步按钮事件
-            document.getElementById('syncBtn').addEventListener('click', syncData);
-            
-            // 清空表单按钮事件
-            document.getElementById('clearFormBtn').addEventListener('click', clearForm);
-            
-            // 一键复制按钮事件
-            document.getElementById('copyBtn').addEventListener('click', copyToClipboard);
-            
-            // 关闭模态框按钮事件
-            document.getElementById('closeModalBtn').addEventListener('click', function() {
-                document.getElementById('conflictModal').style.display = 'none';
-                // 清除冲突标记
-                document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-                    slot.classList.remove('conflict');
-                });
-            });
-            
-            // 点击模态框外部关闭
-            document.getElementById('conflictModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.style.display = 'none';
-                    // 清除冲突标记
-                    document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-                        slot.classList.remove('conflict');
-                    });
-                }
-            });
-            
-            // 添加日期限制：只能选择今天及以后的日期
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('useDate').min = today;
-            
-            // 当日期改变时，检查时间冲突并高亮显示
-            document.getElementById('useDate').addEventListener('change', async function() {
-                const selectedDate = this.value;
-                try {
-                    const records = await loadRecordsFromGitHub();
-                    
-                    // 清除所有冲突标记
-                    document.querySelectorAll('.time-slot.conflict').forEach(slot => {
-                        slot.classList.remove('conflict');
-                        slot.removeAttribute('title');
-                    });
-                    
-                    // 查找该日期已有的申请
-                    const dateRecords = records.filter(record => record.date === selectedDate);
-                    
-                    // 高亮显示已被占用的时间段
-                    dateRecords.forEach(record => {
-                        if (record.timeSlots && Array.isArray(record.timeSlots)) {
-                            record.timeSlots.forEach(hour => {
-                                const slot = document.querySelector(`.time-slot[data-hour="${hour}"]`);
-                                if (slot) {
-                                    slot.classList.add('conflict');
-                                    slot.title = `已被 ${record.name || '未知用户'} (${record.department || '未知部门'}) 占用`;
-                                }
-                            });
-                        }
-                    });
-                } catch (error) {
-                    console.error('检查时间冲突失败:', error);
-                }
-            });
-            
-            // 自动同步数据（每30秒检查一次）
-            setInterval(async () => {
-                try {
-                    await displayRecords();
-                } catch (error) {
-                    console.error('自动同步失败:', error);
-                }
-            }, 30000);
-            
-            // 添加键盘快捷键支持
-            document.addEventListener('keydown', function(e) {
-                // Ctrl+S 保存/提交表单
-                if (e.ctrlKey && e.key === 's') {
-                    e.preventDefault();
-                    document.getElementById('applicationForm').dispatchEvent(new Event('submit'));
-                }
-                // Ctrl+E 导出记录
-                if (e.ctrlKey && e.key === 'e') {
-                    e.preventDefault();
-                    exportRecords();
-                }
-                // Ctrl+C 复制记录
-                if (e.ctrlKey && e.key === 'c') {
-                    e.preventDefault();
-                    copyToClipboard();
-                }
-                // Ctrl+R 刷新/同步数据
-                if (e.ctrlKey && e.key === 'r') {
-                    e.preventDefault();
-                    syncData();
-                }
-            });
-            
-            // 添加快捷键提示
-            const shortcutHint = document.createElement('div');
-            shortcutHint.style.cssText = 'position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; z-index: 1000;';
-            shortcutHint.innerHTML = '快捷键: Ctrl+S提交 | Ctrl+E导出 | Ctrl+C复制 | Ctrl+R同步';
-            document.body.appendChild(shortcutHint);
-            
-            // 5秒后隐藏快捷键提示
-            setTimeout(() => {
-                shortcutHint.style.opacity = '0';
-                setTimeout(() => {
-                    document.body.removeChild(shortcutHint);
-                }, 1000);
-            }, 5000);
-            
-        } catch (error) {
-            console.error('初始化页面失败:', error);
-            alert('页面初始化失败，请刷新页面重试。');
-        }
-    }
-    
-    // 页面加载完成后初始化
-    document.addEventListener('DOMContentLoaded', initPage);
-</script>
-</body>
-</html>
-
+}
