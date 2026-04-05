@@ -433,26 +433,31 @@ const TXT_NAME = "录播室申请表.txt";
 const JSON_NAME = "数媒部确认申请表.json";
 let cloudData = [];
 let operationLog = [];
-let currentEditId = ''; // 新增编辑状态标记，空为新增，有值为修改
+let currentEditId = '';
 const today = new Date().toISOString().split('T')[0];
 
-// 初始化：加载云端数据
+// 核心过滤函数：只保留未过期的申请
+function filterValidData(data) {
+    return data.filter(i => i.date >= today);
+}
+
+// 初始化：加载云端并自动清理过期数据
 async function loadCloud() {
     try {
         const res = await fetch(`./${JSON_NAME}?t=${Date.now()}`);
-        cloudData = res.ok ? await res.json() : [];
+        const rawData = res.ok ? await res.json() : [];
+        // 直接过滤掉所有过期数据，不再保留
+        cloudData = filterValidData(rawData);
     } catch (e) { cloudData = []; }
     render();
     refreshSlot();
 }
 
-// 清空本地缓存
 function clearLocal() {
     localStorage.clear();
     sessionStorage.clear();
 }
 
-// 下载文件通用方法
 function download(content, name, type) {
     const blob = new Blob([content], { type: type });
     const url = URL.createObjectURL(blob);
@@ -463,13 +468,12 @@ function download(content, name, type) {
     URL.revokeObjectURL(url);
 }
 
-// 导出审批版TXT（按要求修改）
+// 导出TXT：确保包含申请人姓名
 function exportCurrentTxt(operateType) {
     if (operationLog.length === 0) {
         alert("暂无操作记录可导出");
         return;
     }
-    // 获取最新操作的申请信息
     const lastOperate = operationLog[0];
     const [typeInfo, ...infoArr] = lastOperate.split(" | ");
     const name = infoArr[0];
@@ -478,12 +482,11 @@ function exportCurrentTxt(operateType) {
     const purpose = infoArr[3] || "无";
     const dept = document.getElementById("department").value;
     
-    // 生成TXT内容：删除申请编号，保留申请事由，标注操作类型
     let txt = "==============================\n";
     txt += "        录播室使用申请表\n";
     txt += "==============================\n\n";
     txt += `操作类型：${operateType}\n`;
-    txt += `申请人：${name}\n`;
+    txt += `申请人姓名：${name}\n`; // 明确标注申请人姓名
     txt += `所属部门：${dept}\n`;
     txt += `使用日期：${date}\n`;
     txt += `使用时段：${timeSlots}\n`;
@@ -500,13 +503,14 @@ function exportCurrentTxt(operateType) {
     download(txt, TXT_NAME, "text/plain;charset=utf-8");
 }
 
-// 同步云端数据
+// 同步云端：只导出未过期的数据，自动清理旧的过期记录
 function syncCloud() {
-    download(JSON.stringify(cloudData, null, 2), JSON_NAME, "application/json");
-    alert("已同步云端JSON");
+    // 同步前再次过滤，确保导出的JSON里完全没有过期数据
+    const validData = filterValidData(cloudData);
+    download(JSON.stringify(validData, null, 2), JSON_NAME, "application/json");
+    alert("已同步云端JSON（已自动清理所有过期申请）");
 }
 
-// 初始化时间段选择器
 function initSlots() {
     const box = document.getElementById("timeSlots");
     box.innerHTML = "";
@@ -522,13 +526,11 @@ function initSlots() {
     }
 }
 
-// 刷新时段冲突标记（修改时排除当前编辑的记录）
 function refreshSlot() {
     const date = document.getElementById("useDate").value;
     document.querySelectorAll(".time-slot").forEach(s => {
         s.classList.remove("conflict");
     });
-    // 过滤掉当前正在编辑的记录，避免自己的时段被标记为冲突
     const filterData = currentEditId ? cloudData.filter(i => i.id !== currentEditId) : cloudData;
     filterData.filter(i => i.date === date).forEach(item => {
         item.timeSlots.forEach(h => {
@@ -538,16 +540,15 @@ function refreshSlot() {
     });
 }
 
-// 渲染申请列表
 function render() {
-    const soon = cloudData.filter(i => i.date >= today);
+    // 渲染前再次确保只有未过期数据
+    const soon = filterValidData(cloudData);
     soon.sort((a, b) => new Date(a.date) - new Date(b.date));
     
     const uBody = document.getElementById("upcomingBody");
     uBody.innerHTML = "";
     document.getElementById("upcomingEmpty").style.display = soon.length ? "none" : "block";
     
-    // 生成列表，操作列改为修改按钮
     soon.forEach(item => {
         const t = item.timeSlots.map(h => String(h).padStart(2, '0') + ":00").join("、");
         uBody.innerHTML += `<tr>
@@ -558,36 +559,30 @@ function render() {
         </tr>`;
     });
 
-    // 绑定修改按钮点击事件
     document.querySelectorAll(".modify-btn").forEach(btn => {
         btn.onclick = () => {
             const id = btn.dataset.id;
             const editItem = cloudData.find(i => i.id === id);
             if (!editItem) return;
             
-            // 回填表单数据
             currentEditId = id;
             document.getElementById("applicantName").value = editItem.name;
             document.getElementById("department").value = editItem.department;
             document.getElementById("useDate").value = editItem.date;
             document.getElementById("purpose").value = editItem.purpose;
             
-            // 回填选中的时段
             document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
             editItem.timeSlots.forEach(h => {
                 const dom = document.querySelector(`.time-slot[data-hour="${h}"]`);
                 if (dom) dom.classList.add("selected");
             });
             
-            // 刷新冲突标记
             refreshSlot();
-            // 滚动到表单顶部，方便编辑
             document.querySelector(".form-section").scrollIntoView({ behavior: 'smooth' });
         };
     });
 }
 
-// 表单提交事件（新增/修改通用）
 document.getElementById("applicationForm").addEventListener("submit", e => {
     e.preventDefault();
     const name = document.getElementById("applicantName").value.trim();
@@ -596,7 +591,6 @@ document.getElementById("applicationForm").addEventListener("submit", e => {
     const purpose = document.getElementById("purpose").value.trim();
     const slots = Array.from(document.querySelectorAll(".time-slot.selected")).map(x => +x.dataset.hour);
     
-    // 表单校验
     if (!name || !dept || !date || !purpose || slots.length === 0) {
         alert("请填写完整信息！");
         return;
@@ -605,9 +599,7 @@ document.getElementById("applicationForm").addEventListener("submit", e => {
     const t = slots.map(h => String(h).padStart(2, '0') + ":00").join("、");
     let operateType = '';
 
-    // 区分新增和修改逻辑
     if (currentEditId) {
-        // 修改模式：更新原有记录
         operateType = '修改';
         operationLog.push(`【修改预约】${name} | ${date} | ${t} | ${purpose}`);
         const index = cloudData.findIndex(i => i.id === currentEditId);
@@ -618,7 +610,6 @@ document.getElementById("applicationForm").addEventListener("submit", e => {
             };
         }
     } else {
-        // 新增模式：添加新记录
         operateType = '新增';
         operationLog.push(`【新增预约】${name} | ${date} | ${t} | ${purpose}`);
         cloudData.push({
@@ -627,44 +618,38 @@ document.getElementById("applicationForm").addEventListener("submit", e => {
         });
     }
 
-    // 导出审批TXT
+    // 提交时也清理一次过期数据，确保数据纯净
+    cloudData = filterValidData(cloudData);
+
     exportCurrentTxt(operateType);
     clearLocal();
     
-    // 重置表单和编辑状态
     e.target.reset();
     document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
     currentEditId = '';
     
-    // 弹出提示框
     document.getElementById("tipsModal").classList.add("active");
     operationLog = [];
     
-    // 刷新页面数据
     render();
     refreshSlot();
 });
 
-// 弹窗确认按钮关闭事件
 document.getElementById("confirmBtn").onclick = () => {
     document.getElementById("tipsModal").classList.remove("active");
 };
 
-// 清空表单按钮事件
 document.getElementById("clearFormBtn").onclick = () => {
     document.getElementById("applicationForm").reset();
     document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
-    currentEditId = ''; // 重置编辑状态
+    currentEditId = '';
     refreshSlot();
 };
 
-// 同步云端按钮事件
 document.getElementById("syncCloudBtn").onclick = syncCloud;
 
-// 日期切换刷新冲突
 document.getElementById("useDate").addEventListener("change", refreshSlot);
 
-// 页面初始化
 async function init() {
     const tom = new Date();
     tom.setDate(tom.getDate() + 1);
