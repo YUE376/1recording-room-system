@@ -478,7 +478,7 @@ document.getElementById("startSyncBtn").onclick = async () => {
     btn.disabled = false;
 
     if (result.success) {
-        alert("✅ 同步成功！云端数据已更新");
+        alert("✅ 同步成功！云端数据几分钟后即可更新");
         document.getElementById("syncModal").classList.remove("active");
         document.getElementById("tokenInput").value = "";
         await loadCloud(); // 重新加载最新数据
