@@ -5,348 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>录播室申请管理系统</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
-        }
-        body {
-            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 50%, #cbd5e1 100%);
-            color: #333;
-            padding: 24px;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .container {
-            max-width: 1280px;
-            width: 100%;
-            margin: 0 auto;
-            background: #ffffff;
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
-            padding: 48px;
-            position: relative;
-            overflow: hidden;
-            animation: fadeIn 0.6s ease forwards;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 8px;
-            background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa, #93c5fd);
-        }
-        header {
-            text-align: center;
-            margin-bottom: 48px;
-            padding-bottom: 24px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        h1 {
-            font-size: 32px;
-            color: #0f172a;
-            margin-bottom: 12px;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-        .subtitle {
-            color: #64748b;
-            font-size: 16px;
-            font-weight: 400;
-        }
-        .main-content {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 36px;
-        }
-        .form-section {
-            flex: 1;
-            min-width: 360px;
-            background: #f8fafc;
-            border-radius: 20px;
-            padding: 32px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-            transition: all 0.3s ease;
-        }
-        .form-section:hover {
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
-        }
-        .records-section {
-            flex: 1.2;
-            min-width: 360px;
-            display: flex;
-            flex-direction: column;
-            gap: 28px;
-        }
-        .record-panel {
-            background: #f8fafc;
-            border-radius: 20px;
-            padding: 28px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-            transition: all 0.3s ease;
-        }
-        .record-panel:hover {
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
-        }
-        .section-title {
-            font-size: 20px;
-            color: #1e293b;
-            margin-bottom: 24px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 600;
-        }
-        .section-title::before {
-            content: '';
-            width: 6px;
-            height: 20px;
-            background: #2563eb;
-            border-radius: 4px;
-        }
-        .form-group {
-            margin-bottom: 28px;
-        }
-        label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: 500;
-            color: #334155;
-            font-size: 15px;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 16px 20px;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 15px;
-            transition: all 0.3s ease;
-            background: #ffffff;
-        }
-        input:focus, select:focus, textarea:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-            outline: none;
-        }
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-            line-height: 1.6;
-        }
-        .time-slots {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 10px;
-            margin-top: 12px;
-        }
-        .time-slot {
-            padding: 12px 8px;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            user-select: none;
-            font-weight: 500;
-        }
-        .time-slot:hover:not(.conflict):not(.selected) {
-            background: #eff6ff;
-            border-color: #bfdbfe;
-            transform: translateY(-2px);
-        }
-        .time-slot.selected {
-            background: linear-gradient(135deg, #2563eb, #3b82f6);
-            color: #ffffff;
-            border-color: #1d4ed8;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-        }
-        .time-slot.conflict {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: #ffffff;
-            border-color: #b91c1c;
-            pointer-events: none;
-            opacity: 0.9;
-        }
-        .buttons {
-            display: flex;
-            gap: 16px;
-            margin-top: 32px;
-            flex-wrap: wrap;
-        }
-        button {
-            flex: 1;
-            min-width: 140px;
-            padding: 16px 20px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .submit-btn {
-            background: linear-gradient(135deg, #16a34a, #15803d);
-            color: #ffffff;
-            box-shadow: 0 4px 16px rgba(22, 163, 74, 0.2);
-        }
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(22, 163, 74, 0.3);
-        }
-        .clear-btn {
-            background: linear-gradient(135deg, #64748b, #475569);
-            color: #ffffff;
-            box-shadow: 0 4px 16px rgba(100, 116, 139, 0.2);
-        }
-        .clear-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(100, 116, 139, 0.3);
-        }
-        .sync-btn {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: #ffffff;
-            width: 100%;
-            margin-top: 16px;
-            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
-        }
-        .sync-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
-        }
-        .records-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 15px;
-        }
-        .records-table th {
-            text-align: left;
-            padding: 16px 12px;
-            color: #475569;
-            font-weight: 600;
-            border-bottom: 2px solid #e2e8f0;
-            background: #f1f5f9;
-        }
-        .records-table td {
-            padding: 14px 12px;
-            border-bottom: 1px solid #f1f5f9;
-            color: #334155;
-        }
-        .records-table tr:nth-child(even) {
-            background: #f8fafc;
-        }
-        .records-table tr:hover {
-            background: #eff6ff;
-        }
-        .modify-btn {
-            padding: 6px 12px;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s ease;
-        }
-        .modify-btn:hover {
-            transform: scale(1.05);
-        }
-        .empty {
-            padding: 32px;
-            text-align: center;
-            color: #94a3b8;
-            font-size: 15px;
-        }
-        .footer {
-            margin-top: 48px;
-            padding-top: 24px;
-            text-align: center;
-            color: #94a3b8;
-            font-size: 14px;
-            border-top: 1px solid #f1f5f9;
-        }
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.4s ease;
-        }
-        .modal.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .modal-content {
-            background: #ffffff;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 520px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            animation: modalScale 0.3s ease forwards;
-        }
-        @keyframes modalScale {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        .modal-title {
-            font-size: 20px;
-            color: #1e293b;
-            margin-bottom: 20px;
-            font-weight: 600;
-            line-height: 1.6;
-        }
-        .modal-btn {
-            padding: 14px 32px;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: #ffffff;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            max-width: 220px;
-            margin: 0 auto;
-            display: block;
-        }
-        .modal-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
-        }
-        @media (max-width: 768px) {
-            .time-slots { grid-template-columns: repeat(4, 1fr); }
-            .buttons { flex-direction: column; gap: 12px; }
-            .container { padding: 32px 24px; }
-        }
-        @media (max-width: 480px) {
-            .time-slots { grid-template-columns: repeat(3, 1fr); }
-            .form-section, .records-section { min-width: 100%; }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; }
+        body { background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 50%, #cbd5e1 100%); color: #333; padding: 24px; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { max-width: 1280px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 24px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08); padding: 48px; position: relative; overflow: hidden; animation: fadeIn 0.6s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .container::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 8px; background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa, #93c5fd); }
+        header { text-align: center; margin-bottom: 48px; padding-bottom: 24px; border-bottom: 1px solid #f1f5f9; }
+        h1 { font-size: 32px; color: #0f172a; margin-bottom: 12px; font-weight: 700; letter-spacing: 1px; }
+        .subtitle { color: #64748b; font-size: 16px; font-weight: 400; }
+        .main-content { display: flex; flex-wrap: wrap; gap: 36px; }
+        .form-section { flex: 1; min-width: 360px; background: #f8fafc; border-radius: 20px; padding: 32px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04); transition: all 0.3s ease; }
+        .form-section:hover { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06); }
+        .records-section { flex: 1.2; min-width: 360px; display: flex; flex-direction: column; gap: 28px; }
+        .record-panel { background: #f8fafc; border-radius: 20px; padding: 28px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04); transition: all 0.3s ease; }
+        .record-panel:hover { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06); }
+        .section-title { font-size: 20px; color: #1e293b; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 2px solid #e2e8f0; display: flex; align-items: center; gap: 12px; font-weight: 600; }
+        .section-title::before { content: ''; width: 6px; height: 20px; background: #2563eb; border-radius: 4px; }
+        .form-group { margin-bottom: 28px; }
+        label { display: block; margin-bottom: 10px; font-weight: 500; color: #334155; font-size: 15px; }
+        input, select, textarea { width: 100%; padding: 16px 20px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; transition: all 0.3s ease; background: #ffffff; }
+        input:focus, select:focus, textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none; }
+        textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
+        .time-slots { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 12px; }
+        .time-slot { padding: 12px 8px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; text-align: center; font-size: 14px; cursor: pointer; transition: all 0.25s ease; user-select: none; font-weight: 500; }
+        .time-slot:hover:not(.conflict):not(.selected) { background: #eff6ff; border-color: #bfdbfe; transform: translateY(-2px); }
+        .time-slot.selected { background: linear-gradient(135deg, #2563eb, #3b82f6); color: #ffffff; border-color: #1d4ed8; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .time-slot.conflict { background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; border-color: #b91c1c; pointer-events: none; opacity: 0.9; }
+        .buttons { display: flex; gap: 16px; margin-top: 32px; flex-wrap: wrap; }
+        button { flex: 1; min-width: 140px; padding: 16px 20px; border: none; border-radius: 12px; font-size: 16px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
+        .submit-btn { background: linear-gradient(135deg, #16a34a, #15803d); color: #ffffff; box-shadow: 0 4px 16px rgba(22, 163, 74, 0.2); }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(22, 163, 74, 0.3); }
+        .clear-btn { background: linear-gradient(135deg, #64748b, #475569); color: #ffffff; box-shadow: 0 4px 16px rgba(100, 116, 139, 0.2); }
+        .clear-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(100, 116, 139, 0.3); }
+        .sync-btn { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #ffffff; width: 100%; margin-top: 16px; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2); }
+        .sync-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3); }
+        .records-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+        .records-table th { text-align: left; padding: 16px 12px; color: #475569; font-weight: 600; border-bottom: 2px solid #e2e8f0; background: #f1f5f9; }
+        .records-table td { padding: 14px 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+        .records-table tr:nth-child(even) { background: #f8fafc; }
+        .records-table tr:hover { background: #eff6ff; }
+        .modify-btn { padding: 6px 12px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: #ffffff; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.2s ease; }
+        .modify-btn:hover { transform: scale(1.05); }
+        .empty { padding: 32px; text-align: center; color: #94a3b8; font-size: 15px; }
+        .footer { margin-top: 48px; padding-top: 24px; text-align: center; color: #94a3b8; font-size: 14px; border-top: 1px solid #f1f5f9; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+        .modal.active { opacity: 1; pointer-events: auto; }
+        .modal-content { background: #ffffff; border-radius: 20px; padding: 40px; max-width: 520px; width: 90%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); text-align: center; animation: modalScale 0.3s ease forwards; }
+        @keyframes modalScale { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .modal-title { font-size: 20px; color: #1e293b; margin-bottom: 20px; font-weight: 600; line-height: 1.6; }
+        .modal-btn { padding: 14px 32px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: #ffffff; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; transition: all 0.3s ease; width: 100%; max-width: 220px; margin: 0 auto; display: block; }
+        .modal-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3); }
+        .token-input { width: 100%; padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px; margin: 20px 0; box-sizing: border-box; }
+        .helper-text { font-size: 13px; color: #64748b; margin-top: 10px; text-align: left; line-height: 1.6; }
+        @media (max-width: 768px) { .time-slots { grid-template-columns: repeat(4, 1fr); } .buttons { flex-direction: column; gap: 12px; } .container { padding: 32px 24px; } }
+        @media (max-width: 480px) { .time-slots { grid-template-columns: repeat(3, 1fr); } .form-section, .records-section { min-width: 100%; } }
     </style>
 </head>
 <body>
@@ -422,42 +134,79 @@
     <div class="footer">
         <p>录播室使用管理规范 · 最终解释权归数媒出版事业部所有</p>
     </div>
+    
+    <!-- 提交成功提示弹窗 -->
     <div class="modal" id="tipsModal">
         <div class="modal-content">
             <h3 class="modal-title">纸质申请表提交数媒部后，方算预约成功</h3>
             <button class="modal-btn" id="confirmBtn">我已知晓</button>
         </div>
     </div>
+
+    <!-- 同步云端Token输入弹窗 -->
+    <div class="modal" id="syncModal">
+        <div class="modal-content">
+            <h3 class="modal-title">同步云端数据</h3>
+            <p style="color: #64748b; font-size: 14px;">请输入GitHub授权Token，完成云端数据同步</p>
+            <input type="password" id="tokenInput" class="token-input" placeholder="请输入你的GitHub细粒度PAT Token">
+            <div class="helper-text">
+                ✅ Token仅存在当前浏览器会话中，关闭页面自动清空<br>
+                ✅ 仅拥有当前仓库的内容读写权限，无其他任何权限
+            </div>
+            <div style="display: flex; gap: 12px; margin-top: 20px;">
+                <button class="modal-btn" id="startSyncBtn" style="background: linear-gradient(135deg, #16a34a, #15803d);">确认并同步</button>
+                <button class="modal-btn" id="closeSyncBtn" style="background: linear-gradient(135deg, #64748b, #475569);">取消</button>
+            </div>
+        </div>
+    </div>
+
 <script>
+// ====================== 请修改这里的2个配置项！！！======================
+const GITHUB_USERNAME = "你的GitHub用户名";
+const GITHUB_REPO = "你的仓库名";
+// ========================================================================
+const JSON_FILE_PATH = "数媒部确认申请表.json"; // 仓库里的JSON文件名，和实际保持一致
 const TXT_NAME = "录播室申请表.txt";
-const JSON_NAME = "数媒部确认申请表.json";
 let cloudData = [];
 let operationLog = [];
 let currentEditId = '';
 const today = new Date().toISOString().split('T')[0];
 
-// 核心过滤函数：只保留未过期的申请
+// 格式化当前申请时间
+function formatApplyTime() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hour = String(now.getHours()).padStart(2, '0');
+    const minute = String(now.getMinutes()).padStart(2, '0');
+    const second = String(now.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+}
+
+// 核心过滤：只保留未过期的申请，自动删除过期数据
 function filterValidData(data) {
     return data.filter(i => i.date >= today);
 }
 
-// 初始化：加载云端并自动清理过期数据
+// 加载云端数据
 async function loadCloud() {
     try {
-        const res = await fetch(`./${JSON_NAME}?t=${Date.now()}`);
+        const res = await fetch(`./${JSON_FILE_PATH}?t=${Date.now()}`);
         const rawData = res.ok ? await res.json() : [];
-        // 直接过滤掉所有过期数据，不再保留
         cloudData = filterValidData(rawData);
     } catch (e) { cloudData = []; }
     render();
     refreshSlot();
 }
 
+// 清空本地缓存
 function clearLocal() {
     localStorage.clear();
     sessionStorage.clear();
 }
 
+// 下载文件通用方法
 function download(content, name, type) {
     const blob = new Blob([content], { type: type });
     const url = URL.createObjectURL(blob);
@@ -468,29 +217,27 @@ function download(content, name, type) {
     URL.revokeObjectURL(url);
 }
 
-// 导出TXT：确保包含申请人姓名
+// 导出TXT申请表
 function exportCurrentTxt(operateType) {
-    if (operationLog.length === 0) {
-        alert("暂无操作记录可导出");
-        return;
-    }
-    const lastOperate = operationLog[0];
-    const [typeInfo, ...infoArr] = lastOperate.split(" | ");
-    const name = infoArr[0];
-    const date = infoArr[1];
-    const timeSlots = infoArr[2];
-    const purpose = infoArr[3] || "无";
-    const dept = document.getElementById("department").value;
+    const realName = document.getElementById("applicantName").value.trim();
+    const realDept = document.getElementById("department").value;
+    const realUseDate = document.getElementById("useDate").value;
+    const realPurpose = document.getElementById("purpose").value.trim();
+    const selectedSlots = Array.from(document.querySelectorAll(".time-slot.selected"))
+        .map(x => String(x.dataset.hour).padStart(2, '0') + ":00")
+        .join("、");
+    const applyTime = formatApplyTime();
     
     let txt = "==============================\n";
     txt += "        录播室使用申请表\n";
     txt += "==============================\n\n";
     txt += `操作类型：${operateType}\n`;
-    txt += `申请人姓名：${name}\n`; // 明确标注申请人姓名
-    txt += `所属部门：${dept}\n`;
-    txt += `使用日期：${date}\n`;
-    txt += `使用时段：${timeSlots}\n`;
-    txt += `申请事由：${purpose}\n\n`;
+    txt += `申请时间：${applyTime}\n`;
+    txt += `申请人姓名：${realName}\n`;
+    txt += `所属部门：${realDept}\n`;
+    txt += `使用日期：${realUseDate}\n`;
+    txt += `使用时段：${selectedSlots}\n`;
+    txt += `申请事由：${realPurpose}\n\n`;
     txt += "==============================\n";
     txt += "          审批意见\n";
     txt += "==============================\n\n";
@@ -503,14 +250,61 @@ function exportCurrentTxt(operateType) {
     download(txt, TXT_NAME, "text/plain;charset=utf-8");
 }
 
-// 同步云端：只导出未过期的数据，自动清理旧的过期记录
-function syncCloud() {
-    // 同步前再次过滤，确保导出的JSON里完全没有过期数据
+// ====================== 核心：GitHub API全自动同步逻辑 ======================
+// 生成最新的有效JSON数据
+function getLatestValidJson() {
     const validData = filterValidData(cloudData);
-    download(JSON.stringify(validData, null, 2), JSON_NAME, "application/json");
-    alert("已同步云端JSON（已自动清理所有过期申请）");
+    return JSON.stringify(validData, null, 2);
 }
 
+// 调用GitHub API更新文件
+async function syncToGithub(token) {
+    const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${JSON_FILE_PATH}`;
+    const latestJson = getLatestValidJson();
+
+    try {
+        // 1. 获取当前文件的sha值（更新文件必须要）
+        const getRes = await fetch(apiUrl, {
+            headers: {
+                "Authorization": `token ${token}`,
+                "Accept": "application/vnd.github.v3+json"
+            }
+        });
+
+        let fileSha = "";
+        if (getRes.ok) {
+            const fileInfo = await getRes.json();
+            fileSha = fileInfo.sha;
+        } else if (getRes.status !== 404) {
+            throw new Error("Token无效或权限不足，请检查Token配置");
+        }
+
+        // 2. 提交更新/创建文件
+        const updateRes = await fetch(apiUrl, {
+            method: "PUT",
+            headers: {
+                "Authorization": `token ${token}`,
+                "Accept": "application/vnd.github.v3+json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: "录播室系统自动同步申请数据",
+                content: btoa(unescape(encodeURIComponent(latestJson))), // 处理中文编码
+                sha: fileSha // 有sha是更新，无sha是创建
+            })
+        });
+
+        if (!updateRes.ok) {
+            throw new Error("同步失败，请检查Token权限和仓库配置");
+        }
+
+        return { success: true };
+    } catch (error) {
+        return { success: false, message: error.message };
+    }
+}
+
+// 初始化时间段选择器
 function initSlots() {
     const box = document.getElementById("timeSlots");
     box.innerHTML = "";
@@ -526,6 +320,7 @@ function initSlots() {
     }
 }
 
+// 刷新时段冲突标记
 function refreshSlot() {
     const date = document.getElementById("useDate").value;
     document.querySelectorAll(".time-slot").forEach(s => {
@@ -540,8 +335,8 @@ function refreshSlot() {
     });
 }
 
+// 渲染申请列表
 function render() {
-    // 渲染前再次确保只有未过期数据
     const soon = filterValidData(cloudData);
     soon.sort((a, b) => new Date(a.date) - new Date(b.date));
     
@@ -559,6 +354,7 @@ function render() {
         </tr>`;
     });
 
+    // 绑定修改按钮事件
     document.querySelectorAll(".modify-btn").forEach(btn => {
         btn.onclick = () => {
             const id = btn.dataset.id;
@@ -583,6 +379,8 @@ function render() {
     });
 }
 
+// ====================== 页面事件绑定 ======================
+// 表单提交
 document.getElementById("applicationForm").addEventListener("submit", e => {
     e.preventDefault();
     const name = document.getElementById("applicantName").value.trim();
@@ -618,27 +416,31 @@ document.getElementById("applicationForm").addEventListener("submit", e => {
         });
     }
 
-    // 提交时也清理一次过期数据，确保数据纯净
+    // 提交时自动清理过期数据
     cloudData = filterValidData(cloudData);
-
     exportCurrentTxt(operateType);
     clearLocal();
     
+    // 重置表单
     e.target.reset();
     document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
     currentEditId = '';
     
+    // 弹出提示
     document.getElementById("tipsModal").classList.add("active");
     operationLog = [];
     
+    // 刷新页面数据
     render();
     refreshSlot();
 });
 
+// 提示弹窗关闭
 document.getElementById("confirmBtn").onclick = () => {
     document.getElementById("tipsModal").classList.remove("active");
 };
 
+// 清空表单
 document.getElementById("clearFormBtn").onclick = () => {
     document.getElementById("applicationForm").reset();
     document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
@@ -646,10 +448,48 @@ document.getElementById("clearFormBtn").onclick = () => {
     refreshSlot();
 };
 
-document.getElementById("syncCloudBtn").onclick = syncCloud;
+// 同步按钮点击：打开Token弹窗
+document.getElementById("syncCloudBtn").onclick = () => {
+    document.getElementById("syncModal").classList.add("active");
+    document.getElementById("tokenInput").focus();
+};
 
+// 取消同步
+document.getElementById("closeSyncBtn").onclick = () => {
+    document.getElementById("syncModal").classList.remove("active");
+};
+
+// 确认同步：调用API
+document.getElementById("startSyncBtn").onclick = async () => {
+    const token = document.getElementById("tokenInput").value.trim();
+    if (!token) {
+        alert("请输入Token！");
+        return;
+    }
+
+    const btn = document.getElementById("startSyncBtn");
+    const originalText = btn.innerText;
+    btn.innerText = "同步中...";
+    btn.disabled = true;
+
+    const result = await syncToGithub(token);
+    btn.innerText = originalText;
+    btn.disabled = false;
+
+    if (result.success) {
+        alert("✅ 同步成功！云端数据已更新");
+        document.getElementById("syncModal").classList.remove("active");
+        document.getElementById("tokenInput").value = "";
+        await loadCloud(); // 重新加载最新数据
+    } else {
+        alert(`❌ 同步失败：${result.message}`);
+    }
+};
+
+// 日期切换刷新冲突
 document.getElementById("useDate").addEventListener("change", refreshSlot);
 
+// 页面初始化
 async function init() {
     const tom = new Date();
     tom.setDate(tom.getDate() + 1);
