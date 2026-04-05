@@ -9,22 +9,32 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Microsoft YaHei', sans-serif;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
         }
         body {
-            background: linear-gradient(135deg, #f8f8fc 0%, #eef2f9 100%);
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 50%, #cbd5e1 100%);
             color: #333;
-            padding: 20px;
+            padding: 24px;
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
+            width: 100%;
             margin: 0 auto;
-            background: #fff;
-            border-radius: 18px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.07);
-            padding: 40px;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 48px;
             position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.6s ease forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .container::before {
             content: '';
@@ -32,211 +42,246 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 6px;
-            background: linear-gradient(90deg, #4382fb, #50c8e6, #62e0b7);
+            height: 8px;
+            background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa, #93c5fd);
         }
         header {
             text-align: center;
-            margin-bottom: 36px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #f0f4f8;
+            margin-bottom: 48px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #f1f5f9;
         }
         h1 {
-            font-size: 28px;
-            color: #1f2937;
-            margin-bottom: 8px;
-            font-weight: 600;
+            font-size: 32px;
+            color: #0f172a;
+            margin-bottom: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
         .subtitle {
-            color: #6b7280;
-            font-size: 15px;
+            color: #64748b;
+            font-size: 16px;
+            font-weight: 400;
         }
         .main-content {
             display: flex;
             flex-wrap: wrap;
-            gap: 32px;
+            gap: 36px;
         }
         .form-section {
             flex: 1;
-            min-width: 320px;
-            background: #fafbfc;
-            border-radius: 14px;
-            padding: 28px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            min-width: 360px;
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease;
+        }
+        .form-section:hover {
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
         }
         .records-section {
             flex: 1.2;
-            min-width: 320px;
+            min-width: 360px;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 28px;
         }
         .record-panel {
-            background: #fafbfc;
-            border-radius: 14px;
-            padding: 24px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease;
+        }
+        .record-panel:hover {
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
         }
         .section-title {
-            font-size: 19px;
-            color: #1f2937;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #e5e7eb;
+            font-size: 20px;
+            color: #1e293b;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            font-weight: 600;
         }
         .section-title::before {
             content: '';
-            width: 5px;
-            height: 18px;
-            background: #4382fb;
-            border-radius: 3px;
+            width: 6px;
+            height: 20px;
+            background: #2563eb;
+            border-radius: 4px;
         }
         .expired-title::before {
-            background: #9ca3af;
+            background: #94a3b8;
         }
         .form-group {
-            margin-bottom: 22px;
+            margin-bottom: 28px;
         }
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-weight: 500;
-            color: #374151;
-            font-size: 14px;
+            color: #334155;
+            font-size: 15px;
         }
         input, select, textarea {
             width: 100%;
-            padding: 13px 16px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
+            padding: 16px 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
             font-size: 15px;
-            transition: all 0.25s ease;
+            transition: all 0.3s ease;
+            background: #ffffff;
         }
         input:focus, select:focus, textarea:focus {
-            border-color: #4382fb;
-            box-shadow: 0 0 0 3px rgba(67,129,255,0.1);
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
             outline: none;
         }
         textarea {
-            min-height: 110px;
+            min-height: 120px;
             resize: vertical;
+            line-height: 1.6;
         }
         .time-slots {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 8px;
-            margin-top: 10px;
+            gap: 10px;
+            margin-top: 12px;
         }
         .time-slot {
-            padding: 10px 6px;
-            background: #f3f4f6;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
+            padding: 12px 8px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
             text-align: center;
-            font-size: 13px;
+            font-size: 14px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
             user-select: none;
+            font-weight: 500;
         }
         .time-slot:hover:not(.conflict):not(.selected) {
-            background: #e0e7ff;
-            border-color: #c7d2fe;
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            transform: translateY(-2px);
         }
         .time-slot.selected {
-            background: #4382fb;
-            color: #fff;
-            border-color: #3762d6;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: #ffffff;
+            border-color: #1d4ed8;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
         }
         .time-slot.conflict {
-            background: #ef4444;
-            color: #fff;
-            border-color: #dc2626;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #ffffff;
+            border-color: #b91c1c;
             pointer-events: none;
             opacity: 0.9;
         }
         .buttons {
             display: flex;
-            gap: 12px;
-            margin-top: 28px;
+            gap: 16px;
+            margin-top: 32px;
             flex-wrap: wrap;
         }
         button {
             flex: 1;
-            min-width: 120px;
-            padding: 13px 16px;
+            min-width: 140px;
+            padding: 16px 20px;
             border: none;
-            border-radius: 8px;
-            font-size: 15px;
+            border-radius: 12px;
+            font-size: 16px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .submit-btn {
-            background: #16a34a;
-            color: #fff;
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            color: #ffffff;
+            box-shadow: 0 4px 16px rgba(22, 163, 74, 0.2);
         }
         .submit-btn:hover {
-            background: #15803d;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(22, 163, 74, 0.3);
         }
         .clear-btn {
-            background: #6b7280;
-            color: #fff;
+            background: linear-gradient(135deg, #64748b, #475569);
+            color: #ffffff;
+            box-shadow: 0 4px 16px rgba(100, 116, 139, 0.2);
         }
         .clear-btn:hover {
-            background: #4b5563;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(100, 116, 139, 0.3);
         }
         .sync-btn {
-            background: #3b82f6;
-            color: #fff;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #ffffff;
             width: 100%;
-            margin-top: 10px;
+            margin-top: 16px;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
         }
         .sync-btn:hover {
-            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
         }
         .records-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
+            font-size: 15px;
         }
         .records-table th {
             text-align: left;
-            padding: 12px 10px;
-            color: #4b5563;
-            font-weight: 500;
-            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 12px;
+            color: #475569;
+            font-weight: 600;
+            border-bottom: 2px solid #e2e8f0;
+            background: #f1f5f9;
         }
         .records-table td {
-            padding: 11px 10px;
-            border-bottom: 1px solid #f3f4f8;
+            padding: 14px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+        }
+        .records-table tr:nth-child(even) {
+            background: #f8fafc;
         }
         .records-table tr:hover {
-            background: #f9fafb;
+            background: #eff6ff;
         }
         .delete-btn {
-            padding: 5px 9px;
-            background: #ef4444;
-            color: #fff;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #ffffff;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+        .delete-btn:hover {
+            transform: scale(1.05);
         }
         .empty {
-            padding: 24px;
+            padding: 32px;
             text-align: center;
-            color: #9ca3af;
-            font-size: 14px;
+            color: #94a3b8;
+            font-size: 15px;
         }
         .footer {
-            margin-top: 36px;
-            padding-top: 20px;
+            margin-top: 48px;
+            padding-top: 24px;
             text-align: center;
-            color: #9ca3af;
-            font-size: 13px;
-            border-top: 1px solid #f0f4f8;
+            color: #94a3b8;
+            font-size: 14px;
+            border-top: 1px solid #f1f5f9;
         }
         .modal {
             position: fixed;
@@ -244,66 +289,73 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.6);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 9999;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.4s ease;
         }
         .modal.active {
             opacity: 1;
             pointer-events: auto;
         }
         .modal-content {
-            background: #fff;
-            border-radius: 12px;
-            padding: 30px;
-            max-width: 500px;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 520px;
             width: 90%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
             text-align: center;
+            animation: modalScale 0.3s ease forwards;
+        }
+        @keyframes modalScale {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
         }
         .modal-title {
-            font-size: 18px;
-            color: #1f2937;
-            margin-bottom: 15px;
+            font-size: 20px;
+            color: #1e293b;
+            margin-bottom: 20px;
             font-weight: 600;
+            line-height: 1.6;
         }
         .modal-btn {
-            padding: 12px 30px;
-            background: #3b82f6;
-            color: #fff;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #ffffff;
             border: none;
-            border-radius: 8px;
-            font-size: 15px;
+            border-radius: 12px;
+            font-size: 16px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             width: 100%;
-            max-width: 200px;
+            max-width: 220px;
         }
         .modal-btn:hover {
-            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
         }
         @media (max-width: 768px) {
             .time-slots { grid-template-columns: repeat(4, 1fr); }
-            .buttons { flex-direction: column; }
+            .buttons { flex-direction: column; gap: 12px; }
+            .container { padding: 32px 24px; }
         }
         @media (max-width: 480px) {
             .time-slots { grid-template-columns: repeat(3, 1fr); }
+            .form-section, .records-section { min-width: 100%; }
         }
     </style>
 </head>
 <body>
-
 <div class="container">
     <header>
         <h1>录播室申请管理系统</h1>
         <p class="subtitle">仅记录本次操作 · 以云端数据为准</p>
     </header>
-
     <div class="main-content">
         <div class="form-section">
             <h2 class="section-title">申请表单</h2>
@@ -350,7 +402,6 @@
                 <button type="button" class="sync-btn" id="syncCloudBtn">同步云端数据</button>
             </form>
         </div>
-
         <div class="records-section">
             <div class="record-panel">
                 <h2 class="section-title">即将使用</h2>
@@ -367,7 +418,6 @@
                 </table>
                 <div id="upcomingEmpty" class="empty">暂无即将使用的申请</div>
             </div>
-
             <div class="record-panel">
                 <h2 class="section-title expired-title">过期申请记录</h2>
                 <table class="records-table">
@@ -385,14 +435,12 @@
             </div>
         </div>
     </div>
-
     <div class="modal" id="tipsModal">
         <div class="modal-content">
             <h3 class="modal-title">纸质申请表提交数媒部后，方算预约成功</h3>
             <button class="modal-btn" id="confirmBtn">我已知晓</button>
         </div>
     </div>
-
 <script>
 const TXT_NAME = "录播室申请表.txt";
 const JSON_NAME = "数媒部确认申请表.json";
@@ -427,21 +475,42 @@ function download(content, name, type) {
     URL.revokeObjectURL(url);
 }
 
-// 导出本次操作 TXT（只显示本次变动）
+// 导出规范审批版TXT（核心修改）
 function exportCurrentTxt() {
-    let txt = "录播室申请表（本次操作）\n";
-    txt += "——————————————————\n";
-    txt += "操作时间：" + new Date().toLocaleString('zh-CN') + "\n\n";
-
     if (operationLog.length === 0) {
-        txt += "本次无操作\n";
-    } else {
-        operationLog.forEach(item => {
-            txt += item + "\n";
-        });
+        alert("暂无操作记录可导出");
+        return;
     }
+    // 获取最新提交的申请信息
+    const lastOperate = operationLog[0];
+    const [operateType, ...infoArr] = lastOperate.split(" | ");
+    const name = infoArr[0];
+    const date = infoArr[1];
+    const timeSlots = infoArr[2];
+    const purpose = infoArr[3] || "无";
+    const dept = document.getElementById("department").value;
+    const applyNo = Date.now().toString().slice(-8); // 8位申请编号
 
-    txt += "\n纸质表提交数媒部后生效";
+    // 生成分行清晰、可审批的TXT格式
+    let txt = "==============================\n";
+    txt += "        录播室使用申请表\n";
+    txt += "==============================\n\n";
+    txt += `申请编号：${applyNo}\n`;
+    txt += `申请人：${name}\n`;
+    txt += `所属部门：${dept}\n`;
+    txt += `使用日期：${date}\n`;
+    txt += `使用时段：${timeSlots}\n`;
+    txt += `申请事由：${purpose}\n\n`;
+    txt += "==============================\n";
+    txt += "          审批意见\n";
+    txt += "==============================\n\n";
+    txt += "部室主任签字：__________    日期：__________\n\n";
+    txt += "分管领导签字：__________    日期：__________\n\n";
+    txt += "社领导签字：__________      日期：__________\n\n";
+    txt += "==============================\n";
+    txt += "备注：纸质表提交数媒出版事业部后生效\n";
+    txt += "==============================\n";
+
     download(txt, TXT_NAME, "text/plain;charset=utf-8");
 }
 
@@ -487,12 +556,10 @@ function render() {
     const old = cloudData.filter(i => i.date < today);
     soon.sort((a, b) => new Date(a.date) - new Date(b.date));
     old.sort((a, b) => new Date(b.date) - new Date(a.date));
-
     const uBody = document.getElementById("upcomingBody");
     const eBody = document.getElementById("expiredBody");
     uBody.innerHTML = "";
     eBody.innerHTML = "";
-
     document.getElementById("upcomingEmpty").style.display = soon.length ? "none" : "block";
     document.getElementById("expiredEmpty").style.display = old.length ? "none" : "block";
 
@@ -500,7 +567,6 @@ function render() {
         const t = item.timeSlots.map(h => String(h).padStart(2, '0') + ":00").join("、");
         uBody.innerHTML += `<tr><td>${item.date}</td><td>${t}</td><td>${item.name}</td><td><button class="delete-btn" data-id="${item.id}">删除</button></td></tr>`;
     });
-
     old.forEach(item => {
         const t = item.timeSlots.map(h => String(h).padStart(2, '0') + ":00").join("、");
         eBody.innerHTML += `<tr><td>${item.date}</td><td>${t}</td><td>${item.name}</td><td><button class="delete-btn" data-id="${item.id}">删除</button></td></tr>`;
@@ -547,17 +613,15 @@ document.getElementById("applicationForm").addEventListener("submit", e => {
         name, department: dept, date, timeSlots: slots, purpose
     });
 
-    // 导出本次操作 TXT
+    // 导出审批版TXT
     exportCurrentTxt();
-
-    // 清空本地
     clearLocal();
 
-    // 重置
+    // 重置表单
     e.target.reset();
     document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
     document.getElementById("tipsModal").classList.add("active");
-    operationLog = []; // 清空本次操作记录
+    operationLog = [];
     render();
     refreshSlot();
 });
@@ -588,6 +652,7 @@ async function init() {
     initSlots();
     await loadCloud();
 }
+
 window.addEventListener("DOMContentLoaded", init);
 </script>
 </body>
