@@ -161,11 +161,11 @@
     </div>
 
 <script>
-// ====================== 请修改这里的2个配置项！！！======================
-const GITHUB_USERNAME = "YUE376";
-const GITHUB_REPO = "1recording-room-system";
+// ====================== 必须修改这里的3个配置项！！！======================
+const GITHUB_USERNAME = "yue376"; // 你的GitHub用户名，固定是yue376
+const GITHUB_REPO = "你的仓库名"; // 你的仓库名，必须和GitHub上完全一致
+const JSON_FILE_PATH = "数媒部确认申请表.json"; // 仓库里的JSON文件名，必须完全一致
 // ========================================================================
-const JSON_FILE_PATH = "数媒部确认申请表.json"; // 仓库里的JSON文件名，和实际保持一致
 const TXT_NAME = "录播室申请表.txt";
 let cloudData = [];
 let operationLog = [];
@@ -250,7 +250,7 @@ function exportCurrentTxt(operateType) {
     download(txt, TXT_NAME, "text/plain;charset=utf-8");
 }
 
-// ====================== 核心：GitHub API全自动同步逻辑 ======================
+// ====================== 核心：修复后的GitHub API同步逻辑 ======================
 // 生成最新的有效JSON数据
 function getLatestValidJson() {
     const validData = filterValidData(cloudData);
@@ -261,32 +261,32 @@ function getLatestValidJson() {
 async function syncToGithub(token) {
     const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${JSON_FILE_PATH}`;
     const latestJson = getLatestValidJson();
+    // 强制要求的User-Agent头，GitHub API必须要，不然会被拒绝
+    const commonHeaders = {
+        "Authorization": `token ${token}`,
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": GITHUB_USERNAME // 修复核心bug：添加GitHub强制要求的User-Agent
+    };
 
     try {
         // 1. 获取当前文件的sha值（更新文件必须要）
-        const getRes = await fetch(apiUrl, {
-            headers: {
-                "Authorization": `token ${token}`,
-                "Accept": "application/vnd.github.v3+json"
-            }
-        });
-
+        const getRes = await fetch(apiUrl, { headers: commonHeaders });
         let fileSha = "";
+
+        // 处理返回结果
         if (getRes.ok) {
             const fileInfo = await getRes.json();
             fileSha = fileInfo.sha;
         } else if (getRes.status !== 404) {
-            throw new Error("Token无效或权限不足，请检查Token配置");
+            // 非404错误，直接抛出详细信息
+            const errorInfo = await getRes.json();
+            throw new Error(`[${getRes.status}] ${errorInfo.message || "Token无效/权限不足"}`);
         }
 
         // 2. 提交更新/创建文件
         const updateRes = await fetch(apiUrl, {
             method: "PUT",
-            headers: {
-                "Authorization": `token ${token}`,
-                "Accept": "application/vnd.github.v3+json",
-                "Content-Type": "application/json"
-            },
+            headers: commonHeaders,
             body: JSON.stringify({
                 message: "录播室系统自动同步申请数据",
                 content: btoa(unescape(encodeURIComponent(latestJson))), // 处理中文编码
@@ -295,7 +295,8 @@ async function syncToGithub(token) {
         });
 
         if (!updateRes.ok) {
-            throw new Error("同步失败，请检查Token权限和仓库配置");
+            const errorInfo = await updateRes.json();
+            throw new Error(`[${updateRes.status}] ${errorInfo.message || "同步失败，请检查分支保护规则"}`);
         }
 
         return { success: true };
