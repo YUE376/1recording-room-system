@@ -141,11 +141,11 @@
     <div class="modal" id="syncModal">
         <div class="modal-content">
             <h3 class="modal-title">同步云端数据</h3>
-            <p style="color: #64748b; font-size: 14px;">请输入GitHub授权Token，完成云端数据同步</p>
-            <input type="password" id="tokenInput" class="token-input" placeholder="请输入你的GitHub细粒度PAT Token">
+            <p style="color: #64748b; font-size: 14px;">请输入密码，完成申请</p>
+            <input type="password" id="tokenInput" class="token-input" placeholder="请输入密码">
             <div class="helper-text">
-                ✅ Token仅存在当前浏览器会话中，关闭页面自动清空<br>
-                ✅ 仅拥有当前仓库的内容读写权限，无其他任何权限
+                ✅ 本页面只做录播室占用时间登记<br>
+                ✅ 实际录播室的使用以提交数媒部的纸质版流程为准
             </div>
             <div style="display: flex; gap: 12px; margin-top: 20px;">
                 <button class="modal-btn" id="startSyncBtn" style="background: linear-gradient(135deg, #16a34a, #15803d);">确认并同步</button>
@@ -216,25 +216,25 @@ function exportCurrentDocx(operateType) {
     const data = tempFormData;
     const applyTime = formatApplyTime();
     
-    let content = "============================================================\n";
-    content += "                       录播室使用申请表\n";
-    content += "============================================================\n\n";
+    let content = "==================================================================================\n";
+    content += "                              录播室使用申请表\n";
+    content += "==================================================================================\n\n";
     content += `申请时间：${applyTime}\n`;
     content += `申请人姓名：${data.name}\n`;
     content += `所属部门：${data.dept}\n`;
     content += `使用日期：${data.date}\n`;
     content += `使用时段：${data.timeStr}\n`;
     content += `申请事由：${data.purpose}\n\n`;
-    content += "============================================================\n";
-    content += "                       审批意见\n";
-    content += "============================================================\n\n\n";
+    content += "==================================================================================\n";
+    content += "                                 审批意见\n";
+    content += "==================================================================================\n\n\n";
     // 签字区域放大，加长横线+增加空行
-    content += "部室主任签字：____________________    日期：____________________\n\n\n";
-    content += "分管领导签字：____________________    日期：____________________\n\n\n";
-    content += "社领导签字：____________________      日期：____________________\n\n\n";
-    content += "============================================================\n";
-    content += "              备注：纸质表提交数媒出版事业部后生效\n";
-    content += "============================================================\n";
+    content += "部室主任签字：____________________    日期：____________________\n\n\n\n";
+    content += "分管领导签字：____________________    日期：____________________\n\n\n\n";
+    content += "社领导签字：____________________      日期：____________________\n\n\n\n";
+    content += "==================================================================================\n";
+    content += "                     备注：纸质表提交数媒出版事业部后生效\n";
+    content += "==================================================================================\n";
     // 导出为Word格式
     download(content, DOC_NAME, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 }
