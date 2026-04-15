@@ -37,15 +37,11 @@
         .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(22, 163, 74, 0.3); }
         .clear-btn { background: linear-gradient(135deg, #64748b, #475569); color: #ffffff; box-shadow: 0 4px 16px rgba(100, 116, 139, 0.2); }
         .clear-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(100, 116, 139, 0.3); }
-        .sync-btn { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #ffffff; width: 100%; margin-top: 16px; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2); }
-        .sync-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3); }
         .records-table { width: 100%; border-collapse: collapse; font-size: 15px; }
         .records-table th { text-align: left; padding: 16px 12px; color: #475569; font-weight: 600; border-bottom: 2px solid #e2e8f0; background: #f1f5f9; }
         .records-table td { padding: 14px 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
         .records-table tr:nth-child(even) { background: #f8fafc; }
         .records-table tr:hover { background: #eff6ff; }
-        .modify-btn { padding: 6px 12px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: #ffffff; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.2s ease; }
-        .modify-btn:hover { transform: scale(1.05); }
         .empty { padding: 32px; text-align: center; color: #94a3b8; font-size: 15px; }
         .footer { margin-top: 48px; padding-top: 24px; text-align: center; color: #94a3b8; font-size: 14px; border-top: 1px solid #f1f5f9; }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
@@ -65,7 +61,8 @@
 <div class="container">
     <header>
         <h1>录播室申请管理系统</h1>
-        <p class="subtitle">仅记录本次操作 · 以云端数据为准</p>
+        <!-- 已修改副标题 -->
+        <p class="subtitle">实际使用以纸质版留存为准</p>
     </header>
     <div class="main-content">
         <div class="form-section">
@@ -107,10 +104,9 @@
                     <textarea id="purpose" required placeholder="请说明用途"></textarea>
                 </div>
                 <div class="buttons">
-                    <button type="submit" class="submit-btn">提交申请表</button>
+                    <button type="button" class="submit-btn" id="submitNeedBtn">提交需求</button>
                     <button type="button" class="clear-btn" id="clearFormBtn">清空表单</button>
                 </div>
-                <button type="button" class="sync-btn" id="syncCloudBtn">同步云端数据</button>
             </form>
         </div>
         <div class="records-section">
@@ -122,7 +118,6 @@
                             <th>日期</th>
                             <th>时段</th>
                             <th>申请人</th>
-                            <th>操作</th>
                         </tr>
                     </thead>
                     <tbody id="upcomingBody"></tbody>
@@ -135,14 +130,13 @@
         <p>录播室使用管理规范 · 最终解释权归数媒出版事业部所有</p>
     </div>
     
-    <!-- 提交成功提示弹窗 -->
+    <!-- 提交需求提示弹窗 -->
     <div class="modal" id="tipsModal">
         <div class="modal-content">
-            <h3 class="modal-title">纸质申请表提交数媒部后，方算预约成功</h3>
-            <button class="modal-btn" id="confirmBtn">我已知晓</button>
+            <h3 class="modal-title">请输入密码同步数据，并打印弹出的word进行流程签字</h3>
+            <button class="modal-btn" id="confirmBtn">下一步</button>
         </div>
     </div>
-
     <!-- 同步云端Token输入弹窗 -->
     <div class="modal" id="syncModal">
         <div class="modal-content">
@@ -159,20 +153,20 @@
             </div>
         </div>
     </div>
-
 <script>
-// ====================== 已经100%匹配你的仓库信息，无需修改 ======================
-const GITHUB_USERNAME = "YUE376"; // 你的GitHub用户名，完全匹配大小写
-const GITHUB_REPO = "1recording-room-system"; // 你的仓库名，完全匹配
-const JSON_FILE_PATH = "数媒部确认申请表.json"; // 你的JSON文件名，完全匹配
-// ========================================================================
-const TXT_NAME = "录播室申请表.txt";
+// ====================== 仓库信息无需修改 ======================
+const GITHUB_USERNAME = "YUE376";
+const GITHUB_REPO = "1recording-room-system";
+const JSON_FILE_PATH = "数媒部确认申请表.json";
+// ============================================================
+// 改为Word文件名
+const DOC_NAME = "录播室申请表.docx";
 let cloudData = [];
 let operationLog = [];
-let currentEditId = '';
 const today = new Date().toISOString().split('T')[0];
+let tempFormData = null;
 
-// 格式化当前申请时间
+// 格式化申请时间
 function formatApplyTime() {
     const now = new Date();
     const year = now.getFullYear();
@@ -184,7 +178,7 @@ function formatApplyTime() {
     return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
 }
 
-// 核心过滤：只保留未过期的申请，自动删除过期数据
+// 过滤有效数据
 function filterValidData(data) {
     return data.filter(i => i.date >= today);
 }
@@ -217,95 +211,79 @@ function download(content, name, type) {
     URL.revokeObjectURL(url);
 }
 
-// 导出TXT申请表
-function exportCurrentTxt(operateType) {
-    const realName = document.getElementById("applicantName").value.trim();
-    const realDept = document.getElementById("department").value;
-    const realUseDate = document.getElementById("useDate").value;
-    const realPurpose = document.getElementById("purpose").value.trim();
-    const selectedSlots = Array.from(document.querySelectorAll(".time-slot.selected"))
-        .map(x => String(x.dataset.hour).padStart(2, '0') + ":00")
-        .join("、");
+// 导出Word申请表（签字区域放大）
+function exportCurrentDocx(operateType) {
+    const data = tempFormData;
     const applyTime = formatApplyTime();
     
-    let txt = "==============================\n";
-    txt += "        录播室使用申请表\n";
-    txt += "==============================\n\n";
-    txt += `操作类型：${operateType}\n`;
-    txt += `申请时间：${applyTime}\n`;
-    txt += `申请人姓名：${realName}\n`;
-    txt += `所属部门：${realDept}\n`;
-    txt += `使用日期：${realUseDate}\n`;
-    txt += `使用时段：${selectedSlots}\n`;
-    txt += `申请事由：${realPurpose}\n\n`;
-    txt += "==============================\n";
-    txt += "          审批意见\n";
-    txt += "==============================\n\n";
-    txt += "部室主任签字：__________    日期：__________\n\n";
-    txt += "分管领导签字：__________    日期：__________\n\n";
-    txt += "社领导签字：__________      日期：__________\n\n";
-    txt += "==============================\n";
-    txt += "备注：纸质表提交数媒出版事业部后生效\n";
-    txt += "==============================\n";
-    download(txt, TXT_NAME, "text/plain;charset=utf-8");
+    let content = "==============================\n";
+    content += "        录播室使用申请表\n";
+    content += "==============================\n\n";
+    content += `操作类型：${operateType}\n`;
+    content += `申请时间：${applyTime}\n`;
+    content += `申请人姓名：${data.name}\n`;
+    content += `所属部门：${data.dept}\n`;
+    content += `使用日期：${data.date}\n`;
+    content += `使用时段：${data.timeStr}\n`;
+    content += `申请事由：${data.purpose}\n\n`;
+    content += "==============================\n";
+    content += "          审批意见\n";
+    content += "==============================\n\n\n";
+    // 签字区域放大，加长横线+增加空行
+    content += "部室主任签字：____________________    日期：____________________\n\n\n";
+    content += "分管领导签字：____________________    日期：____________________\n\n\n";
+    content += "社领导签字：____________________      日期：____________________\n\n\n";
+    content += "==============================\n";
+    content += "备注：纸质表提交数媒出版事业部后生效\n";
+    content += "==============================\n";
+    // 导出为Word格式
+    download(content, DOC_NAME, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 }
 
-// ====================== 核心：修复后的GitHub API同步逻辑 ======================
-// 生成最新的有效JSON数据
+// GitHub同步逻辑
 function getLatestValidJson() {
     const validData = filterValidData(cloudData);
     return JSON.stringify(validData, null, 2);
 }
 
-// 调用GitHub API更新文件
 async function syncToGithub(token) {
     const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${JSON_FILE_PATH}`;
     const latestJson = getLatestValidJson();
-    // 强制要求的User-Agent头，GitHub API必须要，不然会被拒绝
     const commonHeaders = {
         "Authorization": `token ${token}`,
         "Accept": "application/vnd.github.v3+json",
         "User-Agent": GITHUB_USERNAME
     };
-
     try {
-        // 1. 获取当前文件的sha值（更新文件必须要）
         const getRes = await fetch(apiUrl, { headers: commonHeaders });
         let fileSha = "";
-
-        // 处理返回结果
         if (getRes.ok) {
             const fileInfo = await getRes.json();
             fileSha = fileInfo.sha;
         } else if (getRes.status !== 404) {
-            // 非404错误，直接抛出详细信息
             const errorInfo = await getRes.json();
             throw new Error(`[${getRes.status}] ${errorInfo.message || "Token无效/权限不足"}`);
         }
-
-        // 2. 提交更新/创建文件
         const updateRes = await fetch(apiUrl, {
             method: "PUT",
             headers: commonHeaders,
             body: JSON.stringify({
                 message: "录播室系统自动同步申请数据",
-                content: btoa(unescape(encodeURIComponent(latestJson))), // 处理中文编码
-                sha: fileSha // 有sha是更新，无sha是创建
+                content: btoa(unescape(encodeURIComponent(latestJson))),
+                sha: fileSha
             })
         });
-
         if (!updateRes.ok) {
             const errorInfo = await updateRes.json();
             throw new Error(`[${updateRes.status}] ${errorInfo.message || "同步失败，请检查分支保护规则"}`);
         }
-
         return { success: true };
     } catch (error) {
         return { success: false, message: error.message };
     }
 }
 
-// 初始化时间段选择器
+// 初始化时间段
 function initSlots() {
     const box = document.getElementById("timeSlots");
     box.innerHTML = "";
@@ -321,14 +299,11 @@ function initSlots() {
     }
 }
 
-// 刷新时段冲突标记
+// 刷新时段冲突
 function refreshSlot() {
     const date = document.getElementById("useDate").value;
-    document.querySelectorAll(".time-slot").forEach(s => {
-        s.classList.remove("conflict");
-    });
-    const filterData = currentEditId ? cloudData.filter(i => i.id !== currentEditId) : cloudData;
-    filterData.filter(i => i.date === date).forEach(item => {
+    document.querySelectorAll(".time-slot").forEach(s => s.classList.remove("conflict"));
+    cloudData.filter(i => i.date === date).forEach(item => {
         item.timeSlots.forEach(h => {
             const dom = document.querySelector(`.time-slot[data-hour="${h}"]`);
             if (dom) dom.classList.add("conflict");
@@ -336,121 +311,44 @@ function refreshSlot() {
     });
 }
 
-// 渲染申请列表
+// 渲染列表
 function render() {
     const soon = filterValidData(cloudData);
     soon.sort((a, b) => new Date(a.date) - new Date(b.date));
-    
     const uBody = document.getElementById("upcomingBody");
     uBody.innerHTML = "";
     document.getElementById("upcomingEmpty").style.display = soon.length ? "none" : "block";
-    
     soon.forEach(item => {
         const t = item.timeSlots.map(h => String(h).padStart(2, '0') + ":00").join("、");
-        uBody.innerHTML += `<tr>
-            <td>${item.date}</td>
-            <td>${t}</td>
-            <td>${item.name}</td>
-            <td><button class="modify-btn" data-id="${item.id}">修改</button></td>
-        </tr>`;
-    });
-
-    // 绑定修改按钮事件
-    document.querySelectorAll(".modify-btn").forEach(btn => {
-        btn.onclick = () => {
-            const id = btn.dataset.id;
-            const editItem = cloudData.find(i => i.id === id);
-            if (!editItem) return;
-            
-            currentEditId = id;
-            document.getElementById("applicantName").value = editItem.name;
-            document.getElementById("department").value = editItem.department;
-            document.getElementById("useDate").value = editItem.date;
-            document.getElementById("purpose").value = editItem.purpose;
-            
-            document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
-            editItem.timeSlots.forEach(h => {
-                const dom = document.querySelector(`.time-slot[data-hour="${h}"]`);
-                if (dom) dom.classList.add("selected");
-            });
-            
-            refreshSlot();
-            document.querySelector(".form-section").scrollIntoView({ behavior: 'smooth' });
-        };
+        uBody.innerHTML += `<tr><td>${item.date}</td><td>${t}</td><td>${item.name}</td></tr>`;
     });
 }
 
-// ====================== 页面事件绑定 ======================
-// 表单提交
-document.getElementById("applicationForm").addEventListener("submit", e => {
-    e.preventDefault();
+// 收集表单数据
+function collectAndCheckForm() {
     const name = document.getElementById("applicantName").value.trim();
     const dept = document.getElementById("department").value;
     const date = document.getElementById("useDate").value;
     const purpose = document.getElementById("purpose").value.trim();
     const slots = Array.from(document.querySelectorAll(".time-slot.selected")).map(x => +x.dataset.hour);
-    
+    const timeStr = slots.map(h => String(h).padStart(2, '0') + ":00").join("、");
     if (!name || !dept || !date || !purpose || slots.length === 0) {
         alert("请填写完整信息！");
-        return;
+        return null;
     }
+    return { name, dept, date, purpose, slots, timeStr };
+}
 
-    const t = slots.map(h => String(h).padStart(2, '0') + ":00").join("、");
-    let operateType = '';
-
-    if (currentEditId) {
-        operateType = '修改';
-        operationLog.push(`【修改预约】${name} | ${date} | ${t} | ${purpose}`);
-        const index = cloudData.findIndex(i => i.id === currentEditId);
-        if (index !== -1) {
-            cloudData[index] = {
-                ...cloudData[index],
-                name, department: dept, date, timeSlots: slots, purpose
-            };
-        }
-    } else {
-        operateType = '新增';
-        operationLog.push(`【新增预约】${name} | ${date} | ${t} | ${purpose}`);
-        cloudData.push({
-            id: Date.now().toString(),
-            name, department: dept, date, timeSlots: slots, purpose
-        });
-    }
-
-    // 提交时自动清理过期数据
-    cloudData = filterValidData(cloudData);
-    exportCurrentTxt(operateType);
-    clearLocal();
-    
-    // 重置表单
-    e.target.reset();
-    document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
-    currentEditId = '';
-    
-    // 弹出提示
+// 提交需求按钮
+document.getElementById("submitNeedBtn").addEventListener("click", () => {
+    tempFormData = collectAndCheckForm();
+    if (!tempFormData) return;
     document.getElementById("tipsModal").classList.add("active");
-    operationLog = [];
-    
-    // 刷新页面数据
-    render();
-    refreshSlot();
 });
 
-// 提示弹窗关闭
+// 提示弹窗确认
 document.getElementById("confirmBtn").onclick = () => {
     document.getElementById("tipsModal").classList.remove("active");
-};
-
-// 清空表单
-document.getElementById("clearFormBtn").onclick = () => {
-    document.getElementById("applicationForm").reset();
-    document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
-    currentEditId = '';
-    refreshSlot();
-};
-
-// 同步按钮点击：打开Token弹窗
-document.getElementById("syncCloudBtn").onclick = () => {
     document.getElementById("syncModal").classList.add("active");
     document.getElementById("tokenInput").focus();
 };
@@ -460,37 +358,59 @@ document.getElementById("closeSyncBtn").onclick = () => {
     document.getElementById("syncModal").classList.remove("active");
 };
 
-// 确认同步：调用API
+// 确认同步+导出Word
 document.getElementById("startSyncBtn").onclick = async () => {
     const token = document.getElementById("tokenInput").value.trim();
     if (!token) {
         alert("请输入Token！");
         return;
     }
-
     const btn = document.getElementById("startSyncBtn");
     const originalText = btn.innerText;
     btn.innerText = "同步中...";
     btn.disabled = true;
+
+    cloudData.push({
+        id: Date.now().toString(),
+        name: tempFormData.name,
+        department: tempFormData.dept,
+        date: tempFormData.date,
+        timeSlots: tempFormData.slots,
+        purpose: tempFormData.purpose
+    });
+    cloudData = filterValidData(cloudData);
 
     const result = await syncToGithub(token);
     btn.innerText = originalText;
     btn.disabled = false;
 
     if (result.success) {
-        alert("✅ 同步成功！云端数据几分钟后即可更新");
+        alert("✅ 同步成功！已自动下载Word申请表");
         document.getElementById("syncModal").classList.remove("active");
         document.getElementById("tokenInput").value = "";
-        await loadCloud(); // 重新加载最新数据
+        exportCurrentDocx('新增');
+        document.getElementById("applicationForm").reset();
+        document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
+        clearLocal();
+        tempFormData = null;
+        await loadCloud();
     } else {
         alert(`❌ 同步失败：${result.message}`);
+        cloudData.pop();
     }
 };
 
-// 日期切换刷新冲突
+// 清空表单
+document.getElementById("clearFormBtn").onclick = () => {
+    document.getElementById("applicationForm").reset();
+    document.querySelectorAll(".time-slot.selected").forEach(s => s.classList.remove("selected"));
+    refreshSlot();
+};
+
+// 日期切换
 document.getElementById("useDate").addEventListener("change", refreshSlot);
 
-// 页面初始化
+// 初始化
 async function init() {
     const tom = new Date();
     tom.setDate(tom.getDate() + 1);
@@ -499,7 +419,6 @@ async function init() {
     initSlots();
     await loadCloud();
 }
-
 window.addEventListener("DOMContentLoaded", init);
 </script>
 </body>
