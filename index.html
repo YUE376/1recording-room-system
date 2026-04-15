@@ -216,26 +216,25 @@ function exportCurrentDocx(operateType) {
     const data = tempFormData;
     const applyTime = formatApplyTime();
     
-    let content = "==============================\n";
-    content += "        录播室使用申请表\n";
-    content += "==============================\n\n";
-    content += `操作类型：${operateType}\n`;
+    let content = "============================================================\n";
+    content += "                       录播室使用申请表\n";
+    content += "============================================================\n\n";
     content += `申请时间：${applyTime}\n`;
     content += `申请人姓名：${data.name}\n`;
     content += `所属部门：${data.dept}\n`;
     content += `使用日期：${data.date}\n`;
     content += `使用时段：${data.timeStr}\n`;
     content += `申请事由：${data.purpose}\n\n`;
-    content += "==============================\n";
-    content += "          审批意见\n";
-    content += "==============================\n\n\n";
+    content += "============================================================\n";
+    content += "                       审批意见\n";
+    content += "============================================================\n\n\n";
     // 签字区域放大，加长横线+增加空行
     content += "部室主任签字：____________________    日期：____________________\n\n\n";
     content += "分管领导签字：____________________    日期：____________________\n\n\n";
     content += "社领导签字：____________________      日期：____________________\n\n\n";
-    content += "==============================\n";
-    content += "备注：纸质表提交数媒出版事业部后生效\n";
-    content += "==============================\n";
+    content += "============================================================\n";
+    content += "              备注：纸质表提交数媒出版事业部后生效\n";
+    content += "============================================================\n";
     // 导出为Word格式
     download(content, DOC_NAME, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 }
